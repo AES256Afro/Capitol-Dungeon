@@ -4,6 +4,7 @@ mod content;
 mod dungeon;
 mod editor;
 mod save;
+mod settings;
 mod sprites;
 mod touch;
 mod ui;
@@ -26,6 +27,15 @@ enum Screen {
     CharEditor { sel: usize },
     Log { scroll: usize },
     Skills { branch: usize, tier: usize },
+    Commune,
+    Settings { sel: usize },
+}
+
+/// Run saves are skipped during daily runs (they're their own thing).
+fn autosave(world: &World) {
+    if world.fixed_seed.is_none() {
+        save::write(&save::snapshot(world, true));
+    }
 }
 
 fn conf() -> Conf {
@@ -121,6 +131,7 @@ fn play_events(w: &mut World, sfx: &audio::Sfx) {
             GameEvent::Rest => sfx.rest(),
             GameEvent::Dash => sfx.dash(),
             GameEvent::Recruit => sfx.recruit(),
+            GameEvent::Quest => sfx.recruit(),
         }
     }
 }
@@ -128,6 +139,7 @@ fn play_events(w: &mut World, sfx: &audio::Sfx) {
 #[macroquad::main(conf)]
 async fn main() {
     macroquad::rand::srand(macroquad::miniquad::date::now() as u64);
+    settings::load();
     let content = content::load_content().await;
     let mut look = charedit::load().await;
     let mut textures = ui::build_textures(&content);
@@ -175,8 +187,26 @@ async fn main() {
                 let want_custom = (is_key_pressed(KeyCode::L) || matches!(tap_action, Some(ui::MenuAction::Custom))) && custom.is_some();
                 let want_char = is_key_pressed(KeyCode::C) || matches!(tap_action, Some(ui::MenuAction::CharEditor));
                 let want_editor = is_key_pressed(KeyCode::F9) || matches!(tap_action, Some(ui::MenuAction::Editor));
+                let want_daily = is_key_pressed(KeyCode::D) || matches!(tap_action, Some(ui::MenuAction::Daily));
+                let want_settings = is_key_pressed(KeyCode::O) || matches!(tap_action, Some(ui::MenuAction::Settings));
 
-                if want_start {
+                if want_daily {
+                    let day = (macroquad::miniquad::date::now() / 86400.0) as u64;
+                    macroquad::rand::srand(day.wrapping_mul(7919));
+                    world = World::new(&content);
+                    world.fixed_seed = Some(day);
+                    world.load_level(&content, None);
+                    world.toast(format!(
+                        "DAILY RUN #{} — everyone gets this dungeon today. No saves; go far.",
+                        day % 10000
+                    ));
+                    started = true;
+                    sfx.ui();
+                    screen = Screen::Play;
+                } else if want_settings {
+                    sfx.ui();
+                    screen = Screen::Settings { sel: 0 };
+                } else if want_start {
                     if !started {
                         world = World::new(&content);
                         started = true;
@@ -240,17 +270,20 @@ async fn main() {
                         }
                         Interaction::Descend => {
                             world.descend(&content, None);
-                            save::write(&save::snapshot(&world, true));
+                            autosave(&world);
                         }
                         Interaction::Rested => {
                             world.toast("You rest by the fire. Fully restored — no copay, no deductible. (Saved.)".to_string());
-                            save::write(&save::snapshot(&world, true));
+                            autosave(&world);
                         }
                         Interaction::ChestLoot { text } => {
                             world.toast(format!("Chest: {}", text));
                         }
                         Interaction::None => {}
                     }
+                } else if is_key_pressed(KeyCode::B) && world.near_campfire() {
+                    sfx.ui();
+                    screen = Screen::Commune;
                 } else if is_key_pressed(KeyCode::I) || tin.inventory {
                     sfx.ui();
                     screen = Screen::Inventory { sel: 0, doll: false, doll_sel: 0 };
@@ -264,7 +297,7 @@ async fn main() {
                 } else if is_key_pressed(KeyCode::F9) {
                     screen = Screen::Editor;
                 } else if is_key_pressed(KeyCode::Escape) {
-                    save::write(&save::snapshot(&world, true));
+                    autosave(&world);
                     screen = Screen::Menu;
                 }
 
@@ -397,7 +430,7 @@ async fn main() {
                     if *mode == 2 {
                         if world.forge_reroll(&content, i) {
                             sfx.levelup();
-                            save::write(&save::snapshot(&world, true));
+                            autosave(&world);
                         }
                     } else if *mode == 1 {
                         if let Some(st) = world.player.inventory.get(i) {
@@ -566,7 +599,7 @@ async fn main() {
                     if let Some(id) = id {
                         if world.learn_skill(&content, &id) {
                             sfx.levelup();
-                            save::write(&save::snapshot(&world, true));
+                            autosave(&world);
                         } else {
                             sfx.ui();
                         }
@@ -580,6 +613,97 @@ async fn main() {
                 touch_ui.draw(0);
                 if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::P) {
                     screen = Screen::Play;
+                }
+            }
+
+            Screen::Commune => {
+                let mut build: Option<usize> = None;
+                if is_key_pressed(KeyCode::Key1) { build = Some(0); }
+                if is_key_pressed(KeyCode::Key2) { build = Some(1); }
+                if is_key_pressed(KeyCode::Key3) { build = Some(2); }
+                if is_key_pressed(KeyCode::Key4) { build = Some(3); }
+                clear_background(BLACK);
+                ui::draw_world(&world, &content, &textures);
+                dim();
+                let rects = ui::draw_commune(&world);
+                for t in &tin.taps {
+                    let mut hit_any = false;
+                    for (i, (rx, ry, rw, rh)) in rects.iter().enumerate() {
+                        if t.x >= *rx && t.x <= rx + rw && t.y >= *ry && t.y <= ry + rh {
+                            build = Some(i);
+                            hit_any = true;
+                        }
+                    }
+                    if !hit_any {
+                        screen = Screen::Play;
+                    }
+                }
+                if let Some(i) = build {
+                    if world.buy_commune(&content, i) {
+                        sfx.chest();
+                        autosave(&world);
+                    } else {
+                        sfx.ui();
+                    }
+                }
+                play_events(&mut world, &sfx);
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::B) {
+                    screen = Screen::Play;
+                }
+            }
+
+            Screen::Settings { sel } => {
+                if is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W) {
+                    *sel = sel.saturating_sub(1);
+                }
+                if is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S) {
+                    *sel = (*sel + 1).min(2);
+                }
+                let mut adjust: Option<(usize, bool)> = None;
+                if is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A) {
+                    adjust = Some((*sel, false));
+                }
+                if is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D) || is_key_pressed(KeyCode::Enter) {
+                    adjust = Some((*sel, true));
+                }
+                for t in &tin.taps {
+                    if let Some((row, right)) = ui::settings_row_hit(*t) {
+                        *sel = row;
+                        adjust = Some((row, right));
+                    }
+                }
+                if let Some((row, up)) = adjust {
+                    match row {
+                        0 => {
+                            let v = settings::volume_pct();
+                            settings::set_volume_pct(if up { (v + 10).min(200) } else { v.saturating_sub(10) });
+                            sfx.ui();
+                        }
+                        1 => {
+                            let v = settings::shake_pct();
+                            settings::set_shake_pct(if up { (v + 10).min(200) } else { v.saturating_sub(10) });
+                            sfx.hit();
+                        }
+                        _ => {
+                            let on = !settings::music_on();
+                            settings::set_music_on(on);
+                            if on {
+                                audio::start_music(&music);
+                                music_started = true;
+                            } else {
+                                audio::stop_music(&music);
+                            }
+                        }
+                    }
+                    settings::save();
+                }
+                clear_background(sprites::hex("#14101c"));
+                ui::draw_settings(*sel);
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::O) {
+                    settings::save();
+                    screen = Screen::Menu;
                 }
             }
 

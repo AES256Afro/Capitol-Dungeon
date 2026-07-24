@@ -118,7 +118,16 @@ pub enum GameEvent {
     Rest,
     Dash,
     Recruit,
+    Quest,
 }
+
+/// Commune upgrades purchasable at the campfire: (id, name, desc, cost).
+pub const COMMUNE_UPGRADES: [(&str, &str, &str, i64); 4] = [
+    ("clinic_beds", "Clinic Beds", "+10 max HP, effective immediately. Healthcare infrastructure works.", 120),
+    ("free_library", "Free Library", "Spells cost 10% less. Knowledge compounds better than interest.", 100),
+    ("communal_forge", "Communal Forge", "Forge rerolls cost 25% less. Shared tools, shared savings.", 80),
+    ("soup_kitchen", "Soup Kitchen", "Resting grants Well Fed: +2 ATK for 60 seconds.", 60),
+];
 
 pub struct Player {
     pub x: f32,
@@ -393,6 +402,14 @@ pub struct World {
     // npc ambient chatter
     pub banter_cd: f32,
     pub pending_reply: Option<(usize, String, f32)>,
+    // quests: (quest id, stat value when accepted)
+    pub quests_active: Vec<(String, i64)>,
+    pub quests_done: HashSet<String>,
+    // commune upgrades owned this run
+    pub commune: Vec<String>,
+    pub well_fed_t: f32,
+    // daily-run determinism; None for normal runs
+    pub fixed_seed: Option<u64>,
 }
 
 pub enum Interaction {
@@ -436,6 +453,11 @@ impl World {
             slowmo: 0.0,
             banter_cd: 5.0,
             pending_reply: None,
+            quests_active: Vec::new(),
+            quests_done: HashSet::new(),
+            commune: Vec::new(),
+            well_fed_t: 0.0,
+            fixed_seed: None,
         };
         w.populate(content);
         w
@@ -449,6 +471,10 @@ impl World {
     }
 
     pub fn load_level(&mut self, content: &Content, custom: Option<&CustomLevel>) {
+        // daily runs: deterministic layout per depth, same dungeon for everyone
+        if let Some(seed) = self.fixed_seed {
+            macroquad::rand::srand(seed.wrapping_mul(1000).wrapping_add(self.depth as u64));
+        }
         // recruited comrades descend with you
         let mut squad: Vec<Fighter> = Vec::new();
         for f in self.fighters.drain(..) {
@@ -753,6 +779,7 @@ impl World {
         self.player.hurt = (self.player.hurt - dt).max(0.0);
         self.player.dodge_t = (self.player.dodge_t - dt).max(0.0);
         self.player.dodge_cd = (self.player.dodge_cd - dt).max(0.0);
+        self.well_fed_t = (self.well_fed_t - dt).max(0.0);
 
         // dodge-roll: a burst of speed with invulnerability frames
         if dodge && self.player.dodge_cd <= 0.0 {
@@ -814,10 +841,11 @@ impl World {
             }
             let origin = (self.player.x, self.player.y);
             let crit_chance = 12.0 + self.player.skill_sum(content, "crit");
+            let atk_eff = atk_total + if self.well_fed_t > 0.0 { 2 } else { 0 };
             let mut kills = 0;
             for i in hits.into_iter().rev() {
                 let crit = gen_range(0.0_f32, 100.0_f32) < crit_chance;
-                let mut dmg = (atk_total - self.mobs[i].def + gen_range(0, 3)).max(1);
+                let mut dmg = (atk_eff - self.mobs[i].def + gen_range(0, 3)).max(1);
                 if crit {
                     dmg *= 2;
                 }
@@ -1197,6 +1225,7 @@ impl World {
             }
         }
         self.bump_stat_max("gold", self.player.gold, content);
+        self.check_quests(content);
     }
 
     fn update_npcs(&mut self, dt: f32, content: &Content) {
@@ -1364,10 +1393,12 @@ impl World {
             }
         }
         self.add_stat("kills", 1, content);
+        self.add_stat(&format!("kills_{}", def.id), 1, content);
         if def.boss {
             self.add_stat("bosses", 1, content);
             self.toast(format!("{} liquidated. The dungeon breathes easier.", def.name));
         }
+        self.check_quests(content);
     }
 
     fn cast_spell(&mut self, slot: usize, content: &Content) {
@@ -1380,11 +1411,12 @@ impl World {
             .collect();
         let Some(&si) = known.get(slot) else { return };
         let mut spell = content.spells[si].clone();
-        // Focused Rage: cheaper casting
-        spell.cost = ((spell.cost as f32
-            * (1.0 - self.player.skill_sum(content, "focus") / 100.0))
-            .ceil() as i32)
-            .max(1);
+        // Focused Rage skill + Free Library commune upgrade: cheaper casting
+        let mut cost_mult = 1.0 - self.player.skill_sum(content, "focus") / 100.0;
+        if self.commune_has("free_library") {
+            cost_mult *= 0.9;
+        }
+        spell.cost = ((spell.cost as f32 * cost_mult).ceil() as i32).max(1);
         if self.player.mp < spell.cost {
             self.toast(format!("Not enough MP for {}.", spell.name));
             return;
@@ -1478,6 +1510,77 @@ impl World {
         ItemInst { id: id.to_string(), prefix, suffix }
     }
 
+    /// Complete any active quests whose target stat has advanced far enough.
+    pub fn check_quests(&mut self, content: &Content) {
+        let mut finished: Vec<usize> = Vec::new();
+        for (i, (qid, base)) in self.quests_active.iter().enumerate() {
+            if let Some(q) = content.quests.iter().find(|q| &q.id == qid) {
+                let now = self.stats.get(&q.stat).copied().unwrap_or(0);
+                if now - base >= q.count {
+                    finished.push(i);
+                }
+            }
+        }
+        for i in finished.into_iter().rev() {
+            let (qid, _) = self.quests_active.remove(i);
+            let Some(q) = content.quests.iter().find(|q| q.id == qid).cloned() else { continue };
+            self.quests_done.insert(qid);
+            self.player.gold += q.reward_gold;
+            let mut reward = format!("+{} gold", q.reward_gold);
+            if !q.reward_item.is_empty() && self.player.add_item(&ItemInst::plain(&q.reward_item)) {
+                let name = content
+                    .item(&q.reward_item)
+                    .map(|d| d.name.clone())
+                    .unwrap_or_else(|| q.reward_item.clone());
+                reward = format!("{}, {}", reward, name);
+            }
+            self.events.push(GameEvent::Quest);
+            self.toast(format!("QUEST COMPLETE: {} — {}", q.name, reward));
+            self.log_push(LogKind::System, "Quest", &q.done_line);
+            self.add_stat("quests", 1, content);
+        }
+    }
+
+    pub fn commune_has(&self, id: &str) -> bool {
+        self.commune.iter().any(|c| c == id)
+    }
+
+    pub fn buy_commune(&mut self, content: &Content, idx: usize) -> bool {
+        let Some(&(id, name, _, cost)) = COMMUNE_UPGRADES.get(idx) else { return false };
+        if self.commune_has(id) {
+            self.toast("The commune already built that. Onward!".to_string());
+            return false;
+        }
+        if self.player.gold < cost {
+            self.toast(format!("The commune needs {} gold for {}.", cost, name));
+            return false;
+        }
+        self.player.gold -= cost;
+        self.commune.push(id.to_string());
+        if id == "clinic_beds" {
+            self.player.base_maxhp += 10;
+            self.player.hp += 10;
+        }
+        self.events.push(GameEvent::Quest);
+        self.toast(format!("The commune built: {}! Collective ownership feels good.", name));
+        self.add_stat("commune_built", 1, content);
+        true
+    }
+
+    /// Is the player standing next to the campfire?
+    pub fn near_campfire(&self) -> bool {
+        let ptx = (self.player.x / TILE) as i32;
+        let pty = (self.player.y / TILE) as i32;
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                if self.map.tile(ptx + dx, pty + dy) == Tile::Campfire {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
     /// The forge: melt down one piece of gear and reroll its affixes.
     /// Costs gold, guarantees a prefix, good odds on a suffix.
     pub fn forge_reroll(&mut self, content: &Content, idx: usize) -> bool {
@@ -1488,7 +1591,10 @@ impl World {
             self.toast("The forge only reworks gear, not lunch.".to_string());
             return false;
         }
-        let cost = (25 + def.tier * 25) as i64;
+        let mut cost = (25 + def.tier * 25) as i64;
+        if self.commune_has("communal_forge") {
+            cost = (cost as f32 * 0.75) as i64;
+        }
         if self.player.gold < cost {
             self.toast(format!("The forge needs {} gold for that.", cost));
             return false;
@@ -1554,6 +1660,10 @@ impl World {
                     let (_, _, maxhp, maxmp, _) = self.player.totals(content);
                     self.player.hp = maxhp;
                     self.player.mp = maxmp;
+                    if self.commune_has("soup_kitchen") {
+                        self.well_fed_t = 60.0;
+                        self.toast("Well Fed! The soup kitchen provides (+2 ATK, 60s).".to_string());
+                    }
                     self.events.push(GameEvent::Rest);
                     self.add_stat("rests", 1, content);
                     return Interaction::Rested;
@@ -1573,6 +1683,32 @@ impl World {
             let def = &content.npcs[self.npcs[i].def_idx];
             if def.shopkeeper && self.map.has_shop {
                 return Interaction::Shop;
+            }
+            // quest offers come before small talk
+            let npc_id = def.id.clone();
+            let quest = content
+                .quests
+                .iter()
+                .find(|q| {
+                    q.giver == npc_id
+                        && !self.quests_done.contains(&q.id)
+                        && !self.quests_active.iter().any(|(id, _)| id == &q.id)
+                })
+                .cloned();
+            if let Some(q) = quest {
+                if self.quests_active.len() < 3 {
+                    let base = self.stats.get(&q.stat).copied().unwrap_or(0);
+                    self.quests_active.push((q.id.clone(), base));
+                    let def = &content.npcs[self.npcs[i].def_idx];
+                    let who = def.name.clone();
+                    self.npcs[i].say = q.offer.clone();
+                    self.npcs[i].say_t = 4.0;
+                    self.events.push(GameEvent::Quest);
+                    self.toast(format!("NEW QUEST: {} — {}", q.name, q.desc));
+                    self.log_push(LogKind::Comrade, &who, &q.offer);
+                    self.add_stat("talks", 1, content);
+                    return Interaction::Dialog { who, text: q.offer };
+                }
             }
             let line = if def.lines.is_empty() {
                 "Solidarity, friend.".to_string()

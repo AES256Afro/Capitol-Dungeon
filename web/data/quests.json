@@ -1,0 +1,67 @@
+{
+  "quests": [
+    {
+      "id": "preventative_care", "giver": "medic", "name": "Preventative Care",
+      "desc": "Squash 5 Debt Mites before they compound.",
+      "stat": "kills_insect", "count": 5, "reward_gold": 40, "reward_item": "first_aid",
+      "offer": "The mites are biting again. Squash five for me and the clinic stays quiet. Preventative care, comrade.",
+      "done_line": "Five fewer vectors of usury. The clinic thanks you — take this."
+    },
+    {
+      "id": "field_research", "giver": "teacher", "name": "Field Research",
+      "desc": "Read 3 pieces of wall graffiti.",
+      "stat": "graffiti", "count": 3, "reward_gold": 30, "reward_item": "zine",
+      "offer": "The walls are a syllabus. Read three passages and report back. There WILL be a discussion section.",
+      "done_line": "Well read! The wall speaks and you listened. Extra credit, and a zine."
+    },
+    {
+      "id": "redistribution", "giver": "elder", "name": "Redistribution",
+      "desc": "Open 3 treasure chests.",
+      "stat": "chests", "count": 3, "reward_gold": 50, "reward_item": "",
+      "offer": "Hoarded wealth rots, dear. Crack three chests open and let it circulate.",
+      "done_line": "Circulation restored. The commons grows. Your cut, fair and square."
+    },
+    {
+      "id": "bring_them_home", "giver": "veteran", "name": "Bring Them Home",
+      "desc": "Recruit a fighter to your side.",
+      "stat": "recruits", "count": 1, "reward_gold": 45, "reward_item": "union_banner",
+      "offer": "Nobody fights alone on my watch. Find a comrade out there and bring them into formation.",
+      "done_line": "That's the doctrine: nobody alone. Carry the banner for them."
+    },
+    {
+      "id": "ballad_material", "giver": "bard", "name": "Material for the Ballad",
+      "desc": "Defeat 10 exploiters of any kind.",
+      "stat": "kills", "count": 10, "reward_gold": 35, "reward_item": "strike_coffee",
+      "offer": "The next ballad needs verses and verses need VILLAINS FALLING. Ten of them. Make it rhythmic.",
+      "done_line": "♪ And down came ten, to the people's cheer ♪ — it's already a hit. Coffee's on me."
+    },
+    {
+      "id": "pest_control", "giver": "gardener", "name": "Pest Control",
+      "desc": "Defeat 3 Ad Slimes.",
+      "stat": "kills_slime", "count": 3, "reward_gold": 40, "reward_item": "seed_packet",
+      "offer": "Three slimes have been oozing brand synergy on my mushrooms. The zucchini can't hold forever.",
+      "done_line": "The garden is ad-free once more. Seeds for the liberator."
+    },
+    {
+      "id": "clear_the_hall", "giver": "handyman", "name": "Clear the Hall",
+      "desc": "Defeat 8 exploiters of any kind.",
+      "stat": "kills", "count": 8, "reward_gold": 45, "reward_item": "steel_toes",
+      "offer": "Corridor east of here's full of freeloading landlords. Clear eight out and I'll fix that draft. I tell you what.",
+      "done_line": "Clean hall, clean burn. Take these — dropped a water heater in 'em once, good as new."
+    },
+    {
+      "id": "sample_collection", "giver": "scientist", "name": "Sample Collection",
+      "desc": "Defeat 4 Payday Pythons.",
+      "stat": "kills_snake", "count": 4, "reward_gold": 40, "reward_item": "mana_potion",
+      "offer": "I need venom samples from four Payday Pythons. For science. And *urp* a little for spite.",
+      "done_line": "Beautiful specimens. Their APR was 400%. Their survival rate: lower. Here, potion."
+    },
+    {
+      "id": "the_census", "giver": "delegate", "name": "The Census",
+      "desc": "Talk with comrades 4 times.",
+      "stat": "talks", "count": 4, "reward_gold": 30, "reward_item": "bread",
+      "offer": "The Mud Collective requires a census! Speak with four comrades. Democracy is mostly attendance.",
+      "done_line": "Census complete! Motion to celebrate carries unanimously. Bread for the enumerator."
+    }
+  ]
+}

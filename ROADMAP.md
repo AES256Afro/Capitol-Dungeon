@@ -39,19 +39,22 @@ The plan from here to v1.0. Checked items are already in the game.
 - [ ] Gamepad support (macroquad reads gamepads on native; browser Gamepad API)
 - [ ] Settings screen: volume, screen-shake intensity, text size, key remapping
 
-## v0.4 — "The Commune Grows"
+## v0.4 — "The Commune Grows" (SHIPPED in v0.7)
 
 - [x] Recruitable fighters: walk up to a comrade in the wild, ask them to join
       (E), and they follow you between floors — banner overhead, achievements
+- [x] Quests from NPCs: 9 data-driven quests (quests.json), accepted by
+      talking, tracked live under the minimap, gold + item rewards
+- [x] Safe-room building: [B] at any campfire — Clinic Beds, Free Library,
+      Communal Forge, Soup Kitchen (Well Fed buff); persists in saves
+- [x] Minibosses: The Landlord King and The Algorithm claim rooms on
+      non-boss floors (35% from depth 2); The Algorithm inflicts slow
+- [x] Daily runs: [D] on the menu — date-seeded dungeon, same for every
+      player, fresh character, no saves, bragging rights only
+- [x] Settings: [O] — volume, screen-shake intensity, music toggle; persisted
 - [ ] Deeper recruits: loyalty, gear-sharing, revival at campfires
-- [ ] Quests from NPCs ("clear the co-op's supply route", "find Fern's seeds",
-      "escort the medic to floor 3")
-- [ ] Safe-room building: spend gold to add clinic beds (faster heal), a library
-      (spell discounts), a forge (upgrade gear) — collectively owned, obviously
-- [ ] Reputation: helping fighters/NPCs unlocks dialogue, discounts, and allies
-      at the boss fight
-- [ ] Boss variety: The Landlord King, The Algorithm, The Board (multi-phase)
-- [ ] Daily-seed runs with a shareable seed code
+- [ ] Reputation: helping fighters/NPCs unlocks dialogue and discounts
+- [ ] The Board: multi-phase final boss
 
 ## v0.5 — "Together" (multiplayer)
 

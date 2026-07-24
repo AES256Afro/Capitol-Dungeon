@@ -28,6 +28,9 @@ pub struct RunSave {
     // current format: (item id, prefix, suffix, qty) / (slot, id, prefix, suffix)
     pub inventory2: Vec<(String, Option<String>, Option<String>, i32)>,
     pub equipment2: Vec<(String, String, Option<String>, Option<String>)>,
+    pub quests_active: Vec<(String, i64)>,
+    pub quests_done: Vec<String>,
+    pub commune: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -120,6 +123,9 @@ pub fn snapshot(world: &World, include_run: bool) -> SaveData {
                     .iter()
                     .map(|(k, v)| (k.clone(), v.id.clone(), v.prefix.clone(), v.suffix.clone()))
                     .collect(),
+                quests_active: world.quests_active.clone(),
+                quests_done: world.quests_done.iter().cloned().collect(),
+                commune: world.commune.clone(),
             })
         } else {
             None
@@ -189,6 +195,9 @@ pub fn apply(world: &mut World, content: &Content, sd: &SaveData) -> bool {
             .map(|(slot, id)| (slot.clone(), ItemInst::plain(id)))
             .collect();
     }
+    world.quests_active = run.quests_active.clone();
+    world.quests_done = run.quests_done.iter().cloned().collect();
+    world.commune = run.commune.clone();
     world.depth = run.depth.max(1);
     world.load_level(content, None);
     true

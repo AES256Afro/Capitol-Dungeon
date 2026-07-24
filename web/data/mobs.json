@@ -1003,6 +1003,128 @@
         "..aa..aa....",
         ".baa..aab..."
       ]
+    },
+    {
+      "id": "landlord_king",
+      "name": "The Landlord King",
+      "hp": 130,
+      "atk": 13,
+      "def": 4,
+      "speed": 38,
+      "xp": 90,
+      "gold_min": 40,
+      "gold_max": 80,
+      "tier": 5,
+      "boss": true,
+      "lines": [
+        "ALL of this is a unit! YOU are a unit! Units pay RENT!",
+        "I've raised the rent on this fight mid-swing!",
+        "Your security deposit? Consider it seized!",
+        "I own the floor, the walls, and the concept of shelter!",
+        "Eviction court is in session and I am the judge!",
+        "No pets, no guests, no HOPE!"
+      ],
+      "inflicts": "",
+      "drops": [
+        {
+          "item": "commune_tower",
+          "chance": 0.35
+        },
+        {
+          "item": "guillotine_edge",
+          "chance": 0.2
+        },
+        {
+          "item": "golden_apple",
+          "chance": 0.5
+        },
+        {
+          "item": "commons_ring",
+          "chance": 0.15
+        }
+      ],
+      "palette": {
+        "a": "#6faf3f",
+        "b": "#4a7a28",
+        "e": "#ffdd44",
+        "g": "#ffd24a",
+        "c": "#7a5230",
+        "r": "#cc2233"
+      },
+      "sprite": [
+        ".g.g.gg.g.g.",
+        ".gggggggggg.",
+        "..aaaaaaaa..",
+        "..aeaaaaea..",
+        "...aaaaaa...",
+        "....abba....",
+        ".rcccccccr..",
+        ".r.cccccc.r.",
+        "..cccccccc..",
+        "...cccccc...",
+        "....b..b....",
+        "...bb..bb..."
+      ]
+    },
+    {
+      "id": "algorithm",
+      "name": "The Algorithm",
+      "hp": 95,
+      "atk": 11,
+      "def": 2,
+      "speed": 74,
+      "xp": 80,
+      "gold_min": 30,
+      "gold_max": 60,
+      "tier": 5,
+      "boss": true,
+      "lines": [
+        "ENGAGEMENT DETECTED. OPTIMIZING YOUR DEMISE.",
+        "You watched one sword video. Now this. Forever.",
+        "RECOMMENDED FOR YOU: defeat, despair, and premium despair.",
+        "I know what you'll do before you do. Spoiler: you lose.",
+        "A/B testing your death. Both variants perform WONDERFULLY.",
+        "Your attention is the product. Your HP is the price."
+      ],
+      "inflicts": "slow",
+      "drops": [
+        {
+          "item": "wingtip_liberators",
+          "chance": 0.3
+        },
+        {
+          "item": "liberty_cap",
+          "chance": 0.25
+        },
+        {
+          "item": "big_potion",
+          "chance": 0.5
+        },
+        {
+          "item": "commons_reaper",
+          "chance": 0.12
+        }
+      ],
+      "palette": {
+        "a": "#3a4a6a",
+        "b": "#24304a",
+        "e": "#4affd4",
+        "w": "#8ab4ff"
+      },
+      "sprite": [
+        "aabbaabbaabb",
+        "b..........a",
+        "a.ee....ee.b",
+        "b.ee....ee.a",
+        "a..........b",
+        "b...wwww...a",
+        "a..w....w..b",
+        "b..........a",
+        "a.w.w..w.w.b",
+        "b..........a",
+        "a..........b",
+        "bbaabbaabbaa"
+      ]
     }
   ]
 }

@@ -72,9 +72,10 @@ pub fn camera(world: &World) -> (f32, f32, f32) {
     } else {
         cy = (map_h - screen_height()) / 2.0;
     }
-    // impact shake
-    if world.shake > 0.1 {
-        let m = world.shake.min(10.0);
+    // impact shake (scaled by the player's settings)
+    let shake_scale = crate::settings::shake();
+    if world.shake > 0.1 && shake_scale > 0.01 {
+        let m = world.shake.min(10.0) * shake_scale;
         cx += macroquad::rand::gen_range(-m, m);
         cy += macroquad::rand::gen_range(-m, m);
     }
@@ -436,7 +437,7 @@ pub fn interaction_hint(world: &World, content: &Content) -> Option<String> {
     for dy in -1..=1 {
         for dx in -1..=1 {
             if world.map.tile(ptx + dx, pty + dy) == Tile::Campfire {
-                return Some("[E] Rest by the fire (free, always)".to_string());
+                return Some("[E] Rest (free, always) · [B] Build the commune".to_string());
             }
         }
     }
@@ -591,6 +592,28 @@ pub fn draw_hud(world: &World, content: &Content) {
         3.0,
         WHITE,
     );
+
+    // quest tracker under the minimap
+    {
+        let qx = screen_width() - world.map.w as f32 * 2.0 - 12.0;
+        let mut qy = 12.0 + world.map.h as f32 * 2.0 + 18.0;
+        for (qid, base) in &world.quests_active {
+            if let Some(q) = content.quests.iter().find(|q| &q.id == qid) {
+                let now = world.stats.get(&q.stat).copied().unwrap_or(0);
+                let prog = (now - base).clamp(0, q.count);
+                let line = format!("{} {}/{}", q.name, prog, q.count);
+                draw_rectangle(qx - 4.0, qy - 12.0, world.map.w as f32 * 2.0 + 8.0, 16.0, Color::new(0.0, 0.0, 0.0, 0.45));
+                draw_text(&line, qx, qy, 14.0, if prog >= q.count { hex("#7fd47f") } else { hex("#ffd24a") });
+                qy += 18.0;
+            }
+        }
+    }
+
+    // well-fed buff badge
+    if world.well_fed_t > 0.0 {
+        draw_rectangle(246.0, 34.0, 82.0, 18.0, Color::new(0.25, 0.18, 0.05, 0.85));
+        draw_text(&format!("FED {:.0}s", world.well_fed_t), 252.0, 48.0, 15.0, hex("#ffce7a"));
+    }
 
     // boss bar
     if let Some(b) = world.mobs.iter().find(|m| m.boss && m.aggro) {
@@ -931,8 +954,10 @@ pub fn draw_menu(has_custom: bool) {
 
     let mut lines = vec![
         "[Enter] Descend into the dungeon".to_string(),
+        "[D] Daily run — same dungeon for everyone today".to_string(),
         "[C] Character editor".to_string(),
         "[F9] Level creator".to_string(),
+        "[O] Settings".to_string(),
     ];
     if has_custom {
         lines.insert(1, "[L] Play your custom level".to_string());
@@ -1194,6 +1219,8 @@ pub enum MenuAction {
     Custom,
     CharEditor,
     Editor,
+    Daily,
+    Settings,
 }
 
 pub fn menu_hit(pos: Vec2, has_custom: bool) -> Option<MenuAction> {
@@ -1202,12 +1229,105 @@ pub fn menu_hit(pos: Vec2, has_custom: bool) -> Option<MenuAction> {
     if has_custom {
         actions.push(MenuAction::Custom);
     }
+    actions.push(MenuAction::Daily);
     actions.push(MenuAction::CharEditor);
     actions.push(MenuAction::Editor);
+    actions.push(MenuAction::Settings);
     for (i, a) in actions.into_iter().enumerate() {
         let y = 230.0 + i as f32 * 34.0;
         if pos.x >= cx - 220.0 && pos.x <= cx + 220.0 && pos.y >= y - 26.0 && pos.y <= y + 8.0 {
             return Some(a);
+        }
+    }
+    None
+}
+
+/// The Commune building screen (opened with B at a campfire).
+pub fn draw_commune(world: &World) -> Vec<(f32, f32, f32, f32)> {
+    let w = 620.0_f32.min(screen_width() - 40.0);
+    let h = 380.0_f32.min(screen_height() - 40.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    panel(x, y, w, h, "Build the Commune   [1-4 / tap] build  [Esc] close");
+    draw_text(
+        &format!("Commune treasury (your gold): {}", world.player.gold),
+        x + 12.0,
+        y + 50.0,
+        16.0,
+        hex("#ffd24a"),
+    );
+    let mut rects = Vec::new();
+    for (i, (id, name, desc, cost)) in crate::world::COMMUNE_UPGRADES.iter().enumerate() {
+        let ry = y + 66.0 + i as f32 * 72.0;
+        let owned = world.commune_has(id);
+        let afford = world.player.gold >= *cost;
+        let bg = if owned {
+            Color::new(0.16, 0.2, 0.12, 1.0)
+        } else {
+            Color::new(0.12, 0.1, 0.16, 1.0)
+        };
+        draw_rectangle(x + 12.0, ry, w - 24.0, 64.0, bg);
+        draw_rectangle_lines(x + 12.0, ry, w - 24.0, 64.0, 2.0, if owned { hex("#7fd47f") } else { hex("#4a4458") });
+        let title = format!("[{}] {}", i + 1, name);
+        draw_text(&title, x + 24.0, ry + 22.0, 17.0, if owned { hex("#7fd47f") } else { WHITE });
+        for (li, l) in wrap_text(desc, 60).iter().take(2).enumerate() {
+            draw_text(l, x + 24.0, ry + 40.0 + li as f32 * 15.0, 13.0, hex("#b8b0c4"));
+        }
+        let tag = if owned {
+            "BUILT ✊".to_string()
+        } else {
+            format!("{} g", cost)
+        };
+        let td = measure_text(&tag, None, 16, 1.0);
+        draw_text(
+            &tag,
+            x + w - 24.0 - td.width,
+            ry + 24.0,
+            16.0,
+            if owned { hex("#7fd47f") } else if afford { hex("#ffd24a") } else { hex("#8a4444") },
+        );
+        rects.push((x + 12.0, ry, w - 24.0, 64.0));
+    }
+    rects
+}
+
+/// Settings screen rows: Volume, Screen shake, Music.
+pub fn draw_settings(sel: usize) {
+    let w = 460.0_f32.min(screen_width() - 40.0);
+    let h = 300.0_f32.min(screen_height() - 40.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    panel(x, y, w, h, "Settings   [↑/↓] pick  [←/→] adjust  [Esc] done");
+    let rows = [
+        ("Volume", format!("{}%", crate::settings::volume_pct())),
+        ("Screen shake", format!("{}%", crate::settings::shake_pct())),
+        ("Music", if crate::settings::music_on() { "ON".to_string() } else { "OFF".to_string() }),
+    ];
+    for (i, (label, value)) in rows.iter().enumerate() {
+        let ry = y + 60.0 + i as f32 * 56.0;
+        let selected = i == sel;
+        draw_rectangle(x + 16.0, ry, w - 32.0, 44.0, Color::new(0.12, 0.1, 0.16, 1.0));
+        draw_rectangle_lines(x + 16.0, ry, w - 32.0, 44.0, 2.0, if selected { hex("#ffd24a") } else { hex("#4a4458") });
+        draw_text(label, x + 30.0, ry + 27.0, 17.0, if selected { WHITE } else { GRAY });
+        let vd = measure_text(value, None, 17, 1.0);
+        draw_text(value, x + w - 44.0 - vd.width, ry + 27.0, 17.0, hex("#ffd24a"));
+        draw_text("<", x + w - 130.0, ry + 27.0, 15.0, if selected { WHITE } else { DARKGRAY });
+        draw_text(">", x + w - 32.0, ry + 27.0, 15.0, if selected { WHITE } else { DARKGRAY });
+    }
+    let note = "Saved automatically. Applies everywhere, instantly.";
+    let nd = measure_text(note, None, 14, 1.0);
+    draw_text(note, x + (w - nd.width) / 2.0, y + h - 16.0, 14.0, DARKGRAY);
+}
+
+pub fn settings_row_hit(pos: Vec2) -> Option<(usize, bool)> {
+    let w = 460.0_f32.min(screen_width() - 40.0);
+    let h = 300.0_f32.min(screen_height() - 40.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    for i in 0..3 {
+        let ry = y + 60.0 + i as f32 * 56.0;
+        if pos.x >= x + 16.0 && pos.x <= x + w - 16.0 && pos.y >= ry && pos.y <= ry + 44.0 {
+            return Some((i, pos.x > x + w / 2.0));
         }
     }
     None

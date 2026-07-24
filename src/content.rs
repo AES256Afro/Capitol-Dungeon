@@ -136,6 +136,21 @@ pub struct SkillDef {
 
 #[derive(Deserialize, Clone, Default)]
 #[serde(default)]
+pub struct QuestDef {
+    pub id: String,
+    pub giver: String, // npc id
+    pub name: String,
+    pub desc: String,
+    pub stat: String,
+    pub count: i64,
+    pub reward_gold: i64,
+    pub reward_item: String,
+    pub offer: String,
+    pub done_line: String,
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct AchievementDef {
     pub id: String,
     pub name: String,
@@ -186,6 +201,10 @@ struct AffixesFile {
     prefixes: Vec<AffixDef>,
     suffixes: Vec<AffixDef>,
 }
+#[derive(Deserialize, Default)]
+struct QuestsFile {
+    quests: Vec<QuestDef>,
+}
 
 pub struct Content {
     pub mobs: Vec<MobDef>,
@@ -200,6 +219,7 @@ pub struct Content {
     pub emotes_mob: Vec<String>,
     pub prefixes: Vec<AffixDef>,
     pub suffixes: Vec<AffixDef>,
+    pub quests: Vec<QuestDef>,
 }
 
 impl Content {
@@ -226,6 +246,7 @@ const DEFAULT_BANTER: &str = include_str!("../data/banter.json");
 const DEFAULT_SKILLS: &str = include_str!("../data/skills.json");
 const DEFAULT_EMOTES: &str = include_str!("../data/emotes.json");
 const DEFAULT_AFFIXES: &str = include_str!("../data/affixes.json");
+const DEFAULT_QUESTS: &str = include_str!("../data/quests.json");
 
 async fn load_or(path: &str, fallback: &str) -> String {
     match macroquad::file::load_string(path).await {
@@ -255,6 +276,7 @@ pub async fn load_content() -> Content {
     let skills_s = load_or("data/skills.json", DEFAULT_SKILLS).await;
     let emotes_s = load_or("data/emotes.json", DEFAULT_EMOTES).await;
     let affixes_s = load_or("data/affixes.json", DEFAULT_AFFIXES).await;
+    let quests_s = load_or("data/quests.json", DEFAULT_QUESTS).await;
 
     let mobs: MobsFile = parse(&mobs_s, DEFAULT_MOBS, "mobs");
     let items: ItemsFile = parse(&items_s, DEFAULT_ITEMS, "items");
@@ -266,6 +288,7 @@ pub async fn load_content() -> Content {
     let skills: SkillsFile = parse(&skills_s, DEFAULT_SKILLS, "skills");
     let emotes: EmotesFile = parse(&emotes_s, DEFAULT_EMOTES, "emotes");
     let affixes: AffixesFile = parse(&affixes_s, DEFAULT_AFFIXES, "affixes");
+    let quests: QuestsFile = parse(&quests_s, DEFAULT_QUESTS, "quests");
 
     Content {
         mobs: mobs.mobs,
@@ -280,5 +303,6 @@ pub async fn load_content() -> Content {
         emotes_mob: emotes.mob,
         prefixes: affixes.prefixes,
         suffixes: affixes.suffixes,
+        quests: quests.quests,
     }
 }

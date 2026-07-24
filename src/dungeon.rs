@@ -217,6 +217,11 @@ pub fn generate(depth: i32, graffiti_count: usize) -> Map {
             let (bx, by) = r.center();
             map.mob_spots.push((bx as usize, by as usize, 4));
         }
+        // miniboss floors: sometimes a mid-tier menace claims a room
+        if depth % 5 != 0 && depth >= 2 && i == far_i && gen_range(0, 100) < 35 {
+            let (bx, by) = r.center();
+            map.mob_spots.push((bx.max(1) as usize, (by - 1).max(1) as usize, 5));
+        }
     }
 
     // graffiti on walls that touch floor
@@ -302,7 +307,7 @@ pub fn from_custom(level: &CustomLevel, graffiti_count: usize) -> Option<Map> {
                     });
                     Tile::Wall
                 }
-                '1' | '2' | '3' | '4' => {
+                '1' | '2' | '3' | '4' | '5' => {
                     map.mob_spots
                         .push((x, y, ch.to_digit(10).unwrap_or(1) as i32));
                     Tile::Floor
@@ -342,7 +347,7 @@ pub fn to_custom(map: &Map, name: &str) -> CustomLevel {
                 ch = 'C';
             }
             if let Some(&(_, _, t)) = map.mob_spots.iter().find(|&&(mx, my, _)| mx == x && my == y) {
-                ch = char::from_digit(t.clamp(1, 4) as u32, 10).unwrap_or('1');
+                ch = char::from_digit(t.clamp(1, 5) as u32, 10).unwrap_or('1');
             }
             if map.npc_spots.iter().any(|&(nx, ny)| nx == x && ny == y) {
                 ch = 'n';

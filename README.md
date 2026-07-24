@@ -87,6 +87,14 @@ Everything else, the goblins financialized. Go fix that.
   striking; dodge through the wind-up with your i-frames
 - **Status effects** — Payday Pythons and Lobbyist Leeches poison you,
   Ad Slimes and HR Wraiths slow you; badges show on the HUD
+- **Quests** — 9 data-driven quests from the safe-room NPCs (`data/quests.json`),
+  with a live tracker under the minimap and gold + item rewards
+- **Minibosses** — The Landlord King and The Algorithm haunt non-boss floors
+- **Build the commune** — press B at a campfire: Clinic Beds, Free Library,
+  Communal Forge, and the Soup Kitchen (Well Fed: +2 ATK after resting)
+- **Daily runs** — press D on the menu: a date-seeded dungeon identical for
+  every player that day; fresh character, no saves, pure bragging rights
+- **Settings** — volume, screen-shake intensity, and music toggle (O)
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
 
 See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,
@@ -101,6 +109,7 @@ co-op multiplayer, Discord Activities, and more).
 | 1–4 | Cast spells |
 | Shift / K | Dodge-roll (i-frames) |
 | E | Interact (talk, shop, chest, graffiti, rest, descend, **recruit fighters**) |
+| B | Build the commune (at a campfire) |
 | I | Inventory & paper doll |
 | P | Skill tree (the Solidarity Tree) |
 | T | Chat log (everything mobs & comrades have said) |

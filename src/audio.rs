@@ -120,7 +120,10 @@ impl Sfx {
 
     fn play(s: &Option<Sound>, volume: f32) {
         if let Some(s) = s {
-            play_sound(s, PlaySoundParams { looped: false, volume });
+            let volume = volume * crate::settings::volume();
+            if volume > 0.01 {
+                play_sound(s, PlaySoundParams { looped: false, volume });
+            }
         }
     }
 
@@ -220,7 +223,16 @@ pub async fn build_music() -> Option<Sound> {
 }
 
 pub fn start_music(music: &Option<Sound>) {
+    if !crate::settings::music_on() {
+        return;
+    }
     if let Some(m) = music {
-        play_sound(m, PlaySoundParams { looped: true, volume: 0.55 });
+        play_sound(m, PlaySoundParams { looped: true, volume: 0.55 * crate::settings::volume() });
+    }
+}
+
+pub fn stop_music(music: &Option<Sound>) {
+    if let Some(m) = music {
+        macroquad::audio::stop_sound(m);
     }
 }
