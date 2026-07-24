@@ -8,7 +8,21 @@
         "Those skeletons? Middle managers who never logged off. Don't end up like them.",
         "Freedom isn't a market. It's a promise we keep to each other.",
         "They call it 'human resources.' We call it 'people.' Words matter down here.",
-        "Rest at the fire. It's free. The best things are."
+        "Rest at the fire. It's free. The best things are.",
+        "I've buried three landlords' dungeons in my time. This one's next.",
+        "The vulture upstairs thinks fear is loyalty. He's never had either.",
+        "When I was young we struck for eight hours. Now the mites want your sleep too.",
+        "A chest hoarded is a chest wasted. Open them all, spread it around.",
+        "You walk like someone carrying everyone's hopes. Good. They're light when shared.",
+        "History doesn't repeat, but the rent collectors sure do.",
+        "The deeper you go, the richer the villains. Funny how that works everywhere.",
+        "Even the walls are on our side. Read them.",
+        "Don't fight tired. Don't fight hungry. The fire and the soup fix both.",
+        "We didn't dig these safe rooms. We organized them.",
+        "The boss on floor five keeps buying his own portrait. Vanity is a weak armor.",
+        "Every generation thinks the fight is new. It's the same fight. We're just better dressed.",
+        "You can't evict an idea, dear. Believe me, they've tried.",
+        "Come back and tell me what you saw down there. Witness is work too."
       ],
       "palette": { "a": "#d9b380", "h": "#e8e8e8", "c": "#8a3a5a", "e": "#332222" },
       "sprite": [
@@ -34,7 +48,19 @@
         "I don't bill. I bandage. There's a difference the surface forgot.",
         "The trolls upstairs charge 4000 gold for an ambulance ride. Down here? Sit. Rest. Heal.",
         "Your health is not a subscription service, comrade.",
-        "While there is a lower class, I am in it. While there is a soul in prison, I am not free."
+        "While there is a lower class, I am in it. While there is a soul in prison, I am not free.",
+        "Drink water. Stretch. Overthrow the vulture. Doctor's orders.",
+        "I've reattached limbs the Debt Mites tried to repossess.",
+        "Nobody asks for your insurance card at my fire. Nobody ever will.",
+        "The wraiths deny claims for a living. I approve them for a life.",
+        "Pain is information. Poverty is a policy. One of those we can amputate.",
+        "Take a potion for the road. Yes, free. Stop asking.",
+        "I trained upstairs. Left when they started charging for insulin. A potion of KEEPING YOU ALIVE.",
+        "Your heart rate says 'hero.' Your posture says 'stretch more.'",
+        "Every scar you bring back is a lesson the next one won't need to bleed for.",
+        "Prevention is the best medicine. Solidarity is the second best.",
+        "If you meet the Pinkerton ghost, aim for his pension. He never had a heart.",
+        "Rest isn't laziness. Rest is maintenance of the revolution's best equipment: you."
       ],
       "palette": { "a": "#c89a6a", "h": "#5c4630", "c": "#e8e8e8", "r": "#cc2233", "e": "#222233" },
       "sprite": [
@@ -60,7 +86,19 @@
         "Knowledge hoarded is knowledge rotted. Ask any lich.",
         "They put paywalls on papers written with public money. Villainy has many forms.",
         "Every spell I know, I'll teach you for free. That's what a spell IS — shared knowledge.",
-        "Study the boss's patterns. Study ALL bosses' patterns. That's praxis."
+        "Study the boss's patterns. Study ALL bosses' patterns. That's praxis.",
+        "The goblins banned my books. Attendance doubled. Curiosity is ungovernable.",
+        "Literacy is a lockpick. That's why they charge for it upstairs.",
+        "The Ad Slimes eat attention. Starve them: think one long thought a day.",
+        "A trained mind spots the trap door AND the trap clause.",
+        "I audit the vulture's claims for sport. Fraud, every one, all the way down.",
+        "Once you learn to read a lease, you can read a battle. Same predatory grammar.",
+        "Tuition-free, debt-free, fear-free. My classroom's three amendments.",
+        "The strongest spell is a library card. The second strongest is General Strike.",
+        "Question everything, especially anything with a trademark symbol.",
+        "The wraith says 'per my last email.' I say 'per the collected works of humanity: no.'",
+        "Grades are a leaderboard. Learning is a commons. I only run the second.",
+        "Homework tonight: topple something. Show your work."
       ],
       "palette": { "a": "#b88a5a", "h": "#333340", "c": "#3a5a8a", "g": "#ffd24a", "e": "#222222" },
       "sprite": [
@@ -86,7 +124,19 @@
         "The goblins DMCA'd my last ballad. I wrote three more about them.",
         "♪ Solidarity forever, the dungeon makes us strong ♪",
         "Music was never meant to be streamed at $0.003 a play, friend.",
-        "They can't evict a melody."
+        "They can't evict a melody.",
+        "♪ Oh the mite wants your wallet and the wraith wants your soul, but the fire keeps burning in the commons below ♪",
+        "I busk for soup and revolution. Business is BOOMING.",
+        "The Vulture hired a jingle writer. A JINGLE. We countered with a symphony.",
+        "Every picket line needs a drummer. I've worn out nine drums.",
+        "♪ The landlord came collecting, we were singing much too loud ♪",
+        "Rhymes are free, choruses are collective, and the bridge? The bridge is FOR EVERYONE.",
+        "I taught a skeleton to whistle once. First joy it felt in 40 fiscal quarters. It quit on the spot.",
+        "Songs travel faster than decrees. Always have.",
+        "♪ Free the clinics, free the schools, free the folk who make the tools ♪",
+        "My grandmother sang this one at the mill gates. Still in tune. Still true.",
+        "A tip jar? No no. A SHARE jar. Take one if you need one.",
+        "When we win — and we will — the last verse writes itself."
       ],
       "palette": { "a": "#d9a97a", "h": "#8a4a2a", "c": "#4a8a5a", "g": "#c8a468", "e": "#222222" },
       "sprite": [
@@ -111,7 +161,16 @@
         "Every purchase funds the free clinic upstairs. Well. Downstairs. Directions are hard here.",
         "At-cost gear for the people. The troll marks up 900%. I mark up 0%.",
         "Take what you need, pay what it's worth. Novel concept, I know.",
-        "The workers own this shop. All one of me."
+        "The workers own this shop. All one of me.",
+        "No loyalty program. Just loyalty.",
+        "Every item is union-made or honestly looted. Full provenance on request.",
+        "The Golden Parachutist offered to franchise me. I offered him the door.",
+        "Surge pricing? In THIS economy? In ANY economy? Never.",
+        "If a price ever feels wrong, tell me. We vote on it at the fire.",
+        "I stock what keeps you alive, not what keeps you buying.",
+        "Refunds, no receipt needed. Trust is our inventory system.",
+        "That shiv? A rat dropped it. That hammer? A troll won't miss it.",
+        "Buy the boots. Comrades don't let comrades adventure in bad boots."
       ],
       "palette": { "a": "#caa070", "h": "#3a2a1a", "c": "#a06a2a", "p": "#4a7a4a", "e": "#222222" },
       "sprite": [
@@ -136,7 +195,17 @@
         "No more wars. Not for oil, not for gold, not for dungeon mineral rights.",
         "The generals never bled. The shareholders never bled. We bled.",
         "Down here we settle things at the campfire, with soup.",
-        "Peace isn't weakness. Peace is the hardest thing we ever organized."
+        "Peace isn't weakness. Peace is the hardest thing we ever organized.",
+        "They gave me a medal and a bill for the ambulance. I kept neither.",
+        "Watch the fighters out there. They fight so nobody has to forever.",
+        "The recruiter promised me college. The union delivered it.",
+        "I know the Pinkerton's tricks. He was on OUR payroll once. Never again.",
+        "War is the vulture's favorite quarterly strategy.",
+        "Every scar on me has a company's name. None of them paid rent for the space.",
+        "When the parade passes, count who's marching and who's waving from balconies.",
+        "The bravest thing I ever did was refuse an order. Second bravest: plant tomatoes.",
+        "Old soldiers don't fade away. We unionize.",
+        "If you see the fighters pinned down out there, wade in. That's the whole doctrine."
       ],
       "palette": { "a": "#b8926a", "h": "#9a9aa8", "c": "#5a6a4a", "e": "#222222" },
       "sprite": [
@@ -149,6 +218,99 @@
         "..cccccccc..",
         ".c.cccccc.c.",
         "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "gardener", "name": "Fern the Gardener",
+      "lines": [
+        "Mushrooms grow best in the dark. So does organizing.",
+        "This compost heap outperforms the vulture's whole portfolio.",
+        "Seeds are the original open source.",
+        "The goblins tried to patent my tomatoes. The tomatoes disagreed. Violently.",
+        "Everything the fire cooks, this soil grew. Closed loop, open hearts.",
+        "I plant a row for the fighters, a row for the fire, a row for whoever's hungry.",
+        "You can't rush a harvest and you can't rush a movement. Water both daily.",
+        "The Ad Slime slimed my garden once. The zucchini won.",
+        "Land doesn't want an owner. It wants a steward.",
+        "Even down here, things bloom. ESPECIALLY down here.",
+        "The best fertilizer? A landlord's tears. Kidding. It's compost. Mostly.",
+        "Every seed I save is a rent payment the future doesn't owe.",
+        "Grow food, share food, repeat. The whole manifesto fits on a seed packet."
+      ],
+      "palette": { "a": "#c89a6a", "h": "#6a8a4a", "c": "#8a6a3a", "e": "#223322" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "brigadier", "name": "Red Brigadier Kass", "fighter": true, "hp": 60, "atk": 9,
+      "lines": [
+        "For the commons!",
+        "The line holds HERE!",
+        "Not one step back, not one gold piece up!",
+        "You picked the wrong floor, exploiter!",
+        "Shields up! Rents down!",
+        "This corridor is under community protection!",
+        "I've got your flank, comrade!",
+        "They fight for bonuses. We fight for each other!",
+        "Another one for the strike fund!",
+        "Tell the vulture we're coming!"
+      ],
+      "palette": { "a": "#c89a6a", "h": "#8a2a2a", "c": "#a03040", "s": "#b8c4cc", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccs..",
+        ".c.ccccccss.",
+        "...ccccccs..",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "shieldmate", "name": "Shieldmate Bruna", "fighter": true, "hp": 75, "atk": 7,
+      "lines": [
+        "Behind me, friend! I'm load-bearing!",
+        "My shield says 'EVERYONE EATS' and it means it!",
+        "Come try the picket line, ghost!",
+        "We hold, we feed, we win!",
+        "The wall of the people does not move!",
+        "You want the safe room? Through ME.",
+        "I used to build houses. Now I AM one!",
+        "Every dent in this shield is a story with a bad landlord in it!",
+        "Stand fast! Soup after!",
+        "The commune remembers its defenders!"
+      ],
+      "palette": { "a": "#d9b380", "h": "#3a2a1a", "c": "#5a6a8a", "s": "#c8a030", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        ".scccccccc..",
+        ".ss.cccccc..",
+        ".sccccccc...",
         "...cccccc...",
         "...cc..cc...",
         "..ccc..ccc.."

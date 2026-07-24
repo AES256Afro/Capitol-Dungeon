@@ -13,6 +13,9 @@ impl Textures {
     pub fn get(&self, key: &str) -> Option<&Texture2D> {
         self.map.get(key)
     }
+    pub fn set(&mut self, key: &str, tex: Texture2D) {
+        self.map.insert(key.to_string(), tex);
+    }
 }
 
 pub fn build_textures(content: &Content) -> Textures {
@@ -68,6 +71,12 @@ pub fn camera(world: &World) -> (f32, f32, f32) {
         cy = cy.clamp(0.0, map_h - screen_height());
     } else {
         cy = (map_h - screen_height()) / 2.0;
+    }
+    // impact shake
+    if world.shake > 0.1 {
+        let m = world.shake.min(10.0);
+        cx += macroquad::rand::gen_range(-m, m);
+        cy += macroquad::rand::gen_range(-m, m);
     }
     (cx, cy, s)
 }
@@ -178,6 +187,35 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
         draw_sprite(tex, &format!("npc:{}", def.id), sx, sy, ts);
     }
 
+    // comrade fighters, out holding the line
+    for f in &world.fighters {
+        let def = &content.npcs[f.def_idx];
+        let sx = f.x * s - cx - ts * 0.5;
+        let sy = f.y * s - cy - ts * 0.5;
+        let tint = if f.hurt > 0.0 {
+            Color::new(1.0, 0.5, 0.5, 1.0)
+        } else {
+            WHITE
+        };
+        if let Some(t) = tex.get(&format!("npc:{}", def.id)) {
+            draw_texture_ex(
+                t,
+                sx,
+                sy,
+                tint,
+                DrawTextureParams {
+                    dest_size: Some(vec2(ts, ts)),
+                    ..Default::default()
+                },
+            );
+        }
+        if f.hp < f.maxhp {
+            let frac = (f.hp as f32 / f.maxhp as f32).clamp(0.0, 1.0);
+            draw_rectangle(sx, sy - 4.0, ts, 3.0, Color::new(0.1, 0.1, 0.1, 0.8));
+            draw_rectangle(sx, sy - 4.0, ts * frac, 3.0, hex("#4fdc7f"));
+        }
+    }
+
     // mobs
     for m in &world.mobs {
         let def = &content.mobs[m.def_idx];
@@ -233,12 +271,41 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
                 },
             );
         }
-        // swing flash
+        // swing arc: a fan of blade-lines sweeping through the facing direction
         if p.swing > 0.0 {
-            let fx = p.x * s - cx + p.facing.x * ts * 0.8;
-            let fy = p.y * s - cy + p.facing.y * ts * 0.8;
-            draw_circle_lines(fx, fy, ts * 0.45, s, Color::new(1.0, 1.0, 0.9, p.swing * 5.0));
+            let prog = 1.0 - p.swing / 0.18; // 0 → 1 over the swing
+            let base = p.facing.y.atan2(p.facing.x);
+            let sweep = 2.4; // radians of total arc
+            let a = base - sweep / 2.0 + sweep * prog;
+            let px0 = p.x * s - cx;
+            let py0 = p.y * s - cy;
+            let alpha = (1.0 - prog * 0.6).clamp(0.0, 1.0);
+            for k in 0..3 {
+                let ak = a - k as f32 * 0.28;
+                let r0 = ts * 0.35;
+                let r1 = ts * (1.05 - k as f32 * 0.12);
+                draw_line(
+                    px0 + ak.cos() * r0,
+                    py0 + ak.sin() * r0,
+                    px0 + ak.cos() * r1,
+                    py0 + ak.sin() * r1,
+                    s * (1.6 - k as f32 * 0.4),
+                    Color::new(1.0, 1.0, 0.9, alpha * (1.0 - k as f32 * 0.3)),
+                );
+            }
         }
+    }
+
+    // impact particles
+    for pt in &world.particles {
+        let a = (pt.t * 3.0).clamp(0.0, 1.0);
+        draw_rectangle(
+            pt.x * s - cx - s,
+            pt.y * s - cy - s,
+            s * 2.0,
+            s * 2.0,
+            Color::from_rgba(pt.color.0, pt.color.1, pt.color.2, (a * 255.0) as u8),
+        );
     }
 
     // spell bursts
@@ -250,10 +317,11 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
         draw_circle_lines(b.x * s - cx, b.y * s - cy, r, s * 1.5, c);
     }
 
-    // floating combat text
+    // floating combat text (crits punch bigger)
     for f in &world.fcts {
         let c = Color::from_rgba(f.color.0, f.color.1, f.color.2, (f.t * 255.0) as u8);
-        draw_text(&f.text, f.x * s - cx, f.y * s - cy, 18.0, c);
+        let size = if f.big { 28.0 + (1.0 - f.t) * 6.0 } else { 18.0 };
+        draw_text(&f.text, f.x * s - cx, f.y * s - cy, size, c);
     }
 
     // speech bubbles: enemies broadcast propaganda, comrades reply
@@ -265,6 +333,11 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
     for n in &world.npcs {
         if n.say_t > 0.0 && !n.say.is_empty() {
             bubble(n.x * s - cx, n.y * s - cy - ts * 0.7, &n.say, hex("#20303a"));
+        }
+    }
+    for f in &world.fighters {
+        if f.say_t > 0.0 && !f.say.is_empty() {
+            bubble(f.x * s - cx, f.y * s - cy - ts * 0.7, &f.say, hex("#2a2038"));
         }
     }
 }
@@ -465,6 +538,9 @@ pub fn draw_hud(world: &World, content: &Content) {
     for m in &world.mobs {
         let c = if m.boss { hex("#ff3355") } else { Color::new(0.9, 0.3, 0.3, 0.8) };
         draw_rectangle(mx + m.x / TILE * mm - 1.0, my + m.y / TILE * mm - 1.0, 2.0, 2.0, c);
+    }
+    for f in &world.fighters {
+        draw_rectangle(mx + f.x / TILE * mm - 1.0, my + f.y / TILE * mm - 1.0, 2.0, 2.0, hex("#4fdc7f"));
     }
     draw_rectangle(
         mx + world.player.x / TILE * mm - 1.5,
@@ -736,6 +812,7 @@ pub fn draw_menu(has_custom: bool) {
 
     let mut lines = vec![
         "[Enter] Descend into the dungeon".to_string(),
+        "[C] Character editor".to_string(),
         "[F9] Level creator".to_string(),
     ];
     if has_custom {
@@ -748,7 +825,7 @@ pub fn draw_menu(has_custom: bool) {
 
     let controls = [
         "WASD/arrows move · Space attack · 1-4 spells · E interact",
-        "I inventory · V achievements · Esc menu",
+        "I inventory · V achievements · Esc menu · touch: stick + buttons",
         "",
         "The fire is free. The clinic is free. The lessons are free.",
         "Everything else, the goblins financialized. Go fix that.",
@@ -757,6 +834,108 @@ pub fn draw_menu(has_custom: bool) {
         let ld = measure_text(l, None, 17, 1.0);
         draw_text(l, cx - ld.width / 2.0, 380.0 + i as f32 * 24.0, 17.0, hex("#8a7f9d"));
     }
+}
+
+// ---------- tap hit-testing (touch support for menus) ----------
+
+pub enum InvHit {
+    Cell(usize),
+    Doll(usize),
+    Inside,
+    Outside,
+}
+
+pub fn inventory_hit(pos: Vec2) -> InvHit {
+    let w = 720.0_f32.min(screen_width() - 40.0);
+    let h = 420.0_f32.min(screen_height() - 40.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    if pos.x < x || pos.x > x + w || pos.y < y || pos.y > y + h {
+        return InvHit::Outside;
+    }
+    let dx = x + 16.0;
+    let dy = y + 44.0;
+    for i in 0..EQUIP_SLOTS.len() {
+        let sy = dy + 10.0 + i as f32 * 44.0;
+        if pos.x >= dx && pos.x <= dx + 250.0 && pos.y >= sy && pos.y <= sy + 40.0 {
+            return InvHit::Doll(i);
+        }
+    }
+    let gx = x + 300.0;
+    let gy = y + 54.0;
+    for i in 0..crate::world::INV_CAP {
+        let cx = gx + (i % 6) as f32 * 58.0;
+        let cy = gy + (i / 6) as f32 * 58.0;
+        if pos.x >= cx && pos.x <= cx + 52.0 && pos.y >= cy && pos.y <= cy + 52.0 {
+            return InvHit::Cell(i);
+        }
+    }
+    InvHit::Inside
+}
+
+pub enum ShopHit {
+    Row(usize),
+    ToggleTab,
+    Inside,
+    Outside,
+}
+
+pub fn shop_hit(pos: Vec2, selling: bool) -> ShopHit {
+    let w = 640.0_f32.min(screen_width() - 40.0);
+    let h = 430.0_f32.min(screen_height() - 40.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    if pos.x < x || pos.x > x + w || pos.y < y || pos.y > y + h {
+        return ShopHit::Outside;
+    }
+    if pos.y <= y + 30.0 {
+        return ShopHit::ToggleTab;
+    }
+    let list_y = y + 70.0;
+    if !selling {
+        for i in 0..8 {
+            let ry = list_y + i as f32 * 48.0;
+            if pos.x >= x + 12.0 && pos.x <= x + w - 12.0 && pos.y >= ry && pos.y <= ry + 42.0 {
+                return ShopHit::Row(i);
+            }
+        }
+    } else {
+        for i in 0..16 {
+            let col = i / 8;
+            let row = i % 8;
+            let rx = x + 12.0 + col as f32 * ((w - 24.0) / 2.0);
+            let ry = list_y + row as f32 * 40.0;
+            let rw = (w - 36.0) / 2.0;
+            if pos.x >= rx && pos.x <= rx + rw && pos.y >= ry && pos.y <= ry + 34.0 {
+                return ShopHit::Row(i);
+            }
+        }
+    }
+    ShopHit::Inside
+}
+
+pub enum MenuAction {
+    Start,
+    Custom,
+    CharEditor,
+    Editor,
+}
+
+pub fn menu_hit(pos: Vec2, has_custom: bool) -> Option<MenuAction> {
+    let cx = screen_width() / 2.0;
+    let mut actions = vec![MenuAction::Start];
+    if has_custom {
+        actions.push(MenuAction::Custom);
+    }
+    actions.push(MenuAction::CharEditor);
+    actions.push(MenuAction::Editor);
+    for (i, a) in actions.into_iter().enumerate() {
+        let y = 230.0 + i as f32 * 34.0;
+        if pos.x >= cx - 220.0 && pos.x <= cx + 220.0 && pos.y >= y - 26.0 && pos.y <= y + 8.0 {
+            return Some(a);
+        }
+    }
+    None
 }
 
 pub fn draw_dead(world: &World) {

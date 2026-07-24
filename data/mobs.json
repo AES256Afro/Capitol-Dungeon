@@ -235,6 +235,154 @@
         ".b.aaaaaa.b.",
         "....n..n...."
       ]
+    },
+    {
+      "id": "slime",
+      "name": "Ad Slime",
+      "hp": 10, "atk": 2, "def": 0, "speed": 38, "xp": 5,
+      "gold_min": 1, "gold_max": 4, "tier": 1,
+      "lines": [
+        "SKIP AD IN 5... 4... NEVER!",
+        "You seem interested in SWORDS. And DEBT.",
+        "This dungeon is brought to you by... ME!",
+        "Accept all cookies. ALL OF THEM.",
+        "Your attention is my dinner!"
+      ],
+      "drops": [ { "item": "zine", "chance": 0.2 } ],
+      "palette": { "a": "#c26bd4", "b": "#8a3f9e", "e": "#ffffff", "p": "#ffde59" },
+      "sprite": [
+        "............",
+        "............",
+        "....aaaa....",
+        "..aaaaaaaa..",
+        ".aaeaaaeaa..",
+        ".aaaaaaaaa..",
+        ".aapppaaaa..",
+        "aaappaaaaaa.",
+        "aaaaaaaaaaa.",
+        ".ab.aab.ba..",
+        "............",
+        "............"
+      ]
+    },
+    {
+      "id": "wraith",
+      "name": "HR Wraith",
+      "hp": 26, "atk": 7, "def": 1, "speed": 58, "xp": 16,
+      "gold_min": 4, "gold_max": 12, "tier": 2,
+      "lines": [
+        "This meeting could have been an email. Your termination could not.",
+        "We're a family here! A haunted, unpaid family!",
+        "Your PTO request has been DENIED.",
+        "Per my last apparition...",
+        "We value your feedback. We fear your union.",
+        "The exit interview is ETERNAL."
+      ],
+      "drops": [ { "item": "thinkers_beret", "chance": 0.08 }, { "item": "strike_coffee", "chance": 0.2 } ],
+      "palette": { "a": "#b8c8d8", "b": "#7a90a8", "e": "#3355ff", "t": "#4a5a70" },
+      "sprite": [
+        "...aaaaaa...",
+        "..aaaaaaaa..",
+        "..aeaaaaea..",
+        "..aaaaaaaa..",
+        "..aattttaa..",
+        "..aaaaaaaa..",
+        ".aaaaaaaaaa.",
+        ".aaaaaaaaaa.",
+        "..aaaaaaaa..",
+        "..a.aaaa.a..",
+        "...a.aa.a...",
+        "....a..a...."
+      ]
+    },
+    {
+      "id": "leech",
+      "name": "Lobbyist Leech",
+      "hp": 22, "atk": 5, "def": 2, "speed": 44, "xp": 14,
+      "gold_min": 8, "gold_max": 18, "tier": 2,
+      "lines": [
+        "I don't bribe. I *contribute*.",
+        "Regulations? I ate them.",
+        "Have you considered NOT having laws?",
+        "I represent the Chamber of Dungeon Commerce!",
+        "A small donation and this all goes away.",
+        "I've attached myself to seventeen senators."
+      ],
+      "drops": [ { "item": "copper_ring", "chance": 0.15 }, { "item": "tin_ring", "chance": 0.15 } ],
+      "palette": { "a": "#5a7a3a", "b": "#3a5222", "e": "#ffe066", "m": "#c04a4a" },
+      "sprite": [
+        "............",
+        "............",
+        "..aa........",
+        ".aaaa.......",
+        ".aeaa.......",
+        ".amaaa......",
+        "..aaaaa.....",
+        "...aaaaa....",
+        "....aaaaab..",
+        ".....aaaab..",
+        "......bbb...",
+        "............"
+      ]
+    },
+    {
+      "id": "pinkerton",
+      "name": "Pinkerton Specter",
+      "hp": 44, "atk": 10, "def": 3, "speed": 60, "xp": 30,
+      "gold_min": 10, "gold_max": 24, "tier": 3,
+      "lines": [
+        "I've been busting unions since 1850. Death didn't stop me.",
+        "Your strike fund is MY bounty.",
+        "The boss says hello. And also: die.",
+        "I infiltrated your book club.",
+        "Solidarity is a crime and I'm the eternal cop of it.",
+        "We never sleep. Literally, anymore."
+      ],
+      "drops": [ { "item": "riot_shield", "chance": 0.08 }, { "item": "steel_greaves", "chance": 0.1 } ],
+      "palette": { "a": "#4a4452", "b": "#2e2a36", "e": "#ff4444", "h": "#6a6274", "w": "#d8d0e0" },
+      "sprite": [
+        "..hhhhhhhh..",
+        ".hhhhhhhhhh.",
+        "...aaaaaa...",
+        "..aweaaewa..",
+        "..aaaaaaaa..",
+        "...aaaaaa...",
+        "..aaaaaaaa..",
+        ".aaaaaaaaaa.",
+        ".a.aaaaaa.a.",
+        "...aaaaaa...",
+        "...a.aa.a...",
+        "....a..a...."
+      ]
+    },
+    {
+      "id": "parachutist",
+      "name": "Golden Parachutist",
+      "hp": 36, "atk": 8, "def": 2, "speed": 68, "xp": 28,
+      "gold_min": 20, "gold_max": 45, "tier": 3,
+      "lines": [
+        "I crashed the company AND got paid for it!",
+        "Failing upward is a skill, peasant!",
+        "Forty million severance. The janitors got a pizza party.",
+        "I'm already interviewing for my next catastrophe!",
+        "Accountability is for the ground floor!"
+      ],
+      "drops": [ { "item": "comrade_band", "chance": 0.1 }, { "item": "big_potion", "chance": 0.2 } ],
+      "palette": { "a": "#d9a97a", "b": "#8a6a4a", "g": "#ffd24a", "e": "#222222", "s": "#3a4a6a" },
+      "sprite": [
+        "..gggggggg..",
+        ".gggggggggg.",
+        ".g.g.gg.g.g.",
+        "..g..gg..g..",
+        "...aaaaaa...",
+        "...aeaaea...",
+        "....aaaa....",
+        "..ssssssss..",
+        ".s.ssssss.s.",
+        "...ssssss...",
+        "...ss..ss...",
+        "..sss..sss.."
+      ]
     }
   ]
 }

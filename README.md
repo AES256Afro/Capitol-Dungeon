@@ -20,23 +20,39 @@ Everything else, the goblins financialized. Go fix that.
 
 - **Procedural dungeon levels** — endless descent, difficulty scales with depth,
   themed floors, a Vulture Capitalist boss guarding the stairs every 5th floor
+- **Combat with weight** — hit-stop, knockback, screen shake, critical hits,
+  impact particles, swing arcs, and synthesized chiptune SFX (no asset files)
+- **Playable on iPad & phones** — virtual joystick + touch buttons appear on the
+  first touch; menus are fully tappable; runs in any mobile browser
+- **Character editor** — hairstyles and hair/skin/shirt/pants palettes, with a
+  live preview; your look persists on desktop
+- **Living NPCs** — comrades wander the safe rooms and talk *to each other*
+  (call-and-response banter, rate-limited so nobody spams), each with a deep
+  pool of dialogue
+- **Rebel fighters in the wild** — Red Brigadier Kass and Shieldmate Bruna roam
+  the dungeon fighting monsters on their own, shouting battle cries; enemies
+  choose between you and them, and comrades can fall
+- **13 enemy types** — rats, mites, pythons, skeletons, goblins, ghouls, trolls,
+  slimes, wraiths, leeches, specters, parachutists, and the Vulture boss —
+  all broadcasting pro-profit propaganda
 - **Safe rooms & rest areas** — campfires heal for free (no copay, no deductible),
   NPCs hang out, mobs cannot enter
 - **The Co-op shop** — at-cost gear, buy and sell, every other floor
-- **Real-time combat** — melee swings, four unlockable spells
+- **Real-time combat + spells** — melee plus four unlockable spells
   (Spark of Rage, Mutual Aid, General Strike, Eat the Rich)
 - **Leveling system** — XP, level-ups, growing stats
-- **Inventory + paper doll** — 7 equipment slots (weapon, offhand, head, chest,
-  legs, boots, ring), 24-slot backpack, usable potions, loot drops, treasure chests
+- **Inventory + paper doll** — 7 equipment slots, 24-slot backpack, **58 items**
+  across weapons, shields, armor, rings, and community-kitchen consumables
 - **16 achievements** — from *Seize the Means* to *Hostile Takeover Averted*
-- **Talking enemies & comrades** — enemies broadcast capitalist propaganda in
-  speech bubbles; NPCs answer with solidarity
 - **Revolutionary graffiti** — readable wall scrawls scattered through the dungeon
 - **Level creator** — full in-game tile editor (F9), save/load custom levels,
   test-play instantly; levels are human-editable JSON text art
 - **Fully data-driven / customizable** — mobs, items, spells, NPCs, dialogue,
-  achievements, and graffiti are plain JSON files with in-file pixel art
+  banter, achievements, and graffiti are plain JSON files with in-file pixel art
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
+
+See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,
+co-op multiplayer, Discord Activities, and more).
 
 ## Controls
 
@@ -48,8 +64,13 @@ Everything else, the goblins financialized. Go fix that.
 | E | Interact (talk, shop, chest, graffiti, rest, descend) |
 | I | Inventory & paper doll |
 | V | Achievements |
+| C | Character editor (from menu) |
 | F9 | Level creator |
 | Esc | Menu / close |
+
+**Touch (iPad / phone):** drag on the left half of the screen for the joystick;
+ATK / E / spell / INV buttons sit on the right. Tap menu rows to select, tap
+again to activate; tap outside a panel to close it.
 
 ## Build & run (native)
 

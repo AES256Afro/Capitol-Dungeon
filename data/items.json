@@ -413,6 +413,636 @@
         "..........",
         ".........."
       ]
+    },
+    {
+      "id": "bread_knife", "name": "Bread Knife", "kind": "weapon",
+      "desc": "For sharing loaves and settling arguments. +3 ATK.",
+      "atk": 3, "value": 18, "tier": 1,
+      "palette": { "a": "#c8d0d8", "b": "#7a5230", "r": "#5c666e" },
+      "sprite": [
+        "......a...",
+        ".....aa...",
+        "....aar...",
+        "...aaa....",
+        "..aaar....",
+        "..aa......",
+        ".bb.......",
+        "bb........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "crowbar", "name": "Liberation Crowbar", "kind": "weapon",
+      "desc": "Opens doors, crates, and possibilities. +5 ATK.",
+      "atk": 5, "value": 45, "tier": 1,
+      "palette": { "a": "#c04a4a", "b": "#802a2a" },
+      "sprite": [
+        "....aa....",
+        "...abba...",
+        "...ab.....",
+        "...ab.....",
+        "...ab.....",
+        "...ab.....",
+        "...ab.....",
+        "...abb....",
+        "....aa....",
+        ".........."
+      ]
+    },
+    {
+      "id": "pipe_wrench", "name": "People's Pipe Wrench", "kind": "weapon",
+      "desc": "Fixes plumbing and plutocrats. +6 ATK.",
+      "atk": 6, "value": 60, "tier": 2,
+      "palette": { "a": "#9aa4ac", "b": "#5c666e" },
+      "sprite": [
+        "...aa.aa..",
+        "...aaaaa..",
+        "....aaa...",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....b.....",
+        ".........."
+      ]
+    },
+    {
+      "id": "picket_pike", "name": "Picket Pike", "kind": "weapon",
+      "desc": "The line holds. +8 ATK.",
+      "atk": 8, "value": 100, "tier": 2,
+      "palette": { "a": "#c8d0d8", "b": "#7a5230", "r": "#cc2233" },
+      "sprite": [
+        "....a.....",
+        "...aaa....",
+        "....a.....",
+        "...rbr....",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        "....b....."
+      ]
+    },
+    {
+      "id": "harvest_scythe", "name": "Harvest Scythe", "kind": "weapon",
+      "desc": "Reaps what the vultures sowed. +9 ATK.",
+      "atk": 9, "value": 130, "tier": 3,
+      "palette": { "a": "#b8c4cc", "b": "#7a5230" },
+      "sprite": [
+        ".aaaaaa...",
+        "......aa..",
+        ".......a..",
+        "....b..a..",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        "....b.....",
+        ".........."
+      ]
+    },
+    {
+      "id": "torch_of_truth", "name": "Torch of Truth", "kind": "weapon",
+      "desc": "Sunlight, portable. Best disinfectant known. +10 ATK.",
+      "atk": 10, "value": 170, "tier": 3,
+      "palette": { "a": "#ffe066", "o": "#ff9933", "b": "#7a5230" },
+      "sprite": [
+        "....aa....",
+        "...aooa...",
+        "...oaao...",
+        "....oo....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "guillotine_edge", "name": "Guillotine Edge", "kind": "weapon",
+      "desc": "A very historical argument. +13 ATK.",
+      "atk": 13, "value": 300, "tier": 4,
+      "palette": { "a": "#d8e0e8", "b": "#3a3440", "r": "#cc2233" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".aaaaaaa..",
+        ".aaaaaa...",
+        ".aaaaa....",
+        ".aaaa.....",
+        ".aaa......",
+        ".bb.......",
+        ".bb.......",
+        "..r.......",
+        ".........."
+      ]
+    },
+    {
+      "id": "pot_lid", "name": "Cacerolazo Pot Lid", "kind": "offhand",
+      "desc": "Shield by day, protest instrument by night. +1 DEF.",
+      "def": 1, "value": 12, "tier": 1,
+      "palette": { "a": "#b8c4cc", "b": "#7a848c" },
+      "sprite": [
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aaabbaaa.",
+        ".aabaabaa.",
+        ".aabaabaa.",
+        ".aaabbaaa.",
+        "..aaaaaa..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "book_of_grievances", "name": "Book of Grievances", "kind": "offhand",
+      "desc": "Heavily annotated. +2 DEF, +12 MP.",
+      "def": 2, "mp": 12, "value": 70, "tier": 2,
+      "palette": { "a": "#8a3a3a", "b": "#5c2424", "g": "#ffd24a" },
+      "sprite": [
+        ".aaaaaaa..",
+        ".abbbbba..",
+        ".abggbba..",
+        ".abbbbba..",
+        ".abbgbba..",
+        ".abbbbba..",
+        ".abbbbba..",
+        ".aaaaaaa..",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "union_banner", "name": "Banner of the Union", "kind": "offhand",
+      "desc": "An injury to one is an injury to all. +3 DEF, +2 ATK.",
+      "def": 3, "atk": 2, "value": 140, "tier": 2,
+      "palette": { "a": "#cc2233", "b": "#7a5230", "w": "#ffffff" },
+      "sprite": [
+        ".b.aaaaaa.",
+        ".b.awwwaa.",
+        ".b.awawaa.",
+        ".b.awwwaa.",
+        ".b.aaaaaa.",
+        ".b.aaaaa..",
+        ".b.aaa....",
+        ".b........",
+        ".b........",
+        ".........."
+      ]
+    },
+    {
+      "id": "commune_tower", "name": "Tower Shield of the Commune", "kind": "offhand",
+      "desc": "It takes a village. The village is behind this. +7 DEF.",
+      "def": 7, "value": 220, "tier": 3,
+      "palette": { "a": "#7a90a8", "b": "#4a5a70", "g": "#ffd24a" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".abbbbbba.",
+        ".abaggaba.",
+        ".abagga.a.",
+        ".abbbbbba.",
+        ".abaaaaba.",
+        ".abbbbbba.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "...aaaa..."
+      ]
+    },
+    {
+      "id": "wool_cap", "name": "Dockworker's Wool Cap", "kind": "head",
+      "desc": "Warm ears, cold stare at injustice. +1 DEF.",
+      "def": 1, "value": 10, "tier": 1,
+      "palette": { "a": "#4a5a8a", "b": "#2e3a5c" },
+      "sprite": [
+        "..........",
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        ".babbbbab.",
+        ".bbbbbbbb.",
+        "..........",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "welding_mask", "name": "Welder's Mask", "kind": "head",
+      "desc": "For looking directly at burning injustice. +3 DEF.",
+      "def": 3, "value": 65, "tier": 2,
+      "palette": { "a": "#5c666e", "b": "#3a4048", "g": "#4aff88" },
+      "sprite": [
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        ".aabggbaa.",
+        ".aabggbaa.",
+        ".aaabbaaa.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "miners_helm", "name": "Miner's Lamp Helm", "kind": "head",
+      "desc": "Lights the way down. Canary sold separately. +4 DEF.",
+      "def": 4, "value": 120, "tier": 3,
+      "palette": { "a": "#c8a030", "b": "#8a6a1a", "w": "#fff8d0" },
+      "sprite": [
+        "..........",
+        "...aaaa...",
+        "..aawwaa..",
+        ".aaawwaaa.",
+        ".aaaaaaaa.",
+        ".babbbbab.",
+        "bbbbbbbbbb",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "liberty_cap", "name": "Liberty Cap", "kind": "head",
+      "desc": "The classic phrygian. Revolutions look up. +3 DEF, +10 MP.",
+      "def": 3, "mp": 10, "value": 150, "tier": 3,
+      "palette": { "a": "#cc2233", "b": "#8a1520" },
+      "sprite": [
+        "....aaa...",
+        "...aaaaa..",
+        "..aaabaa..",
+        "..aabaaa..",
+        ".aaaaaaa..",
+        ".baaaaab..",
+        "..........",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "quilted_jacket", "name": "Quilted Jacket", "kind": "chest",
+      "desc": "Sewn from a hundred donated squares. +1 DEF.",
+      "def": 1, "value": 14, "tier": 1,
+      "palette": { "a": "#8a6a9a", "b": "#5c4468", "p": "#c8a468" },
+      "sprite": [
+        ".aa....aa.",
+        ".aaaaaaaa.",
+        ".apabapaa.",
+        ".aabpbaaa.",
+        ".apabapaa.",
+        ".aabpbaaa.",
+        ".aaa..aaa.",
+        ".aa....aa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "denim_patches", "name": "Denim Jacket of 1000 Patches", "kind": "chest",
+      "desc": "Every patch a cause. +3 DEF, +5 MP.",
+      "def": 3, "mp": 5, "value": 75, "tier": 2,
+      "palette": { "a": "#3a6ab8", "b": "#24457a", "r": "#cc2233", "g": "#ffd24a" },
+      "sprite": [
+        ".aa....aa.",
+        ".aaaaaaaa.",
+        ".argaagra.",
+        ".aaaaaaaa.",
+        ".agraarga.",
+        ".aaaaaaaa.",
+        ".aaa..aaa.",
+        ".aa....aa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "firefighter_coat", "name": "Mutual-Aid Fire Coat", "kind": "chest",
+      "desc": "Runs toward the danger, like its old owner. +6 DEF.",
+      "def": 6, "value": 190, "tier": 3,
+      "palette": { "a": "#c8a030", "b": "#8a4a1a", "w": "#e8e8e8" },
+      "sprite": [
+        ".aa....aa.",
+        ".aaaaaaaa.",
+        ".awaaaawa.",
+        ".abaaaaba.",
+        ".awaaaawa.",
+        ".abaaaaba.",
+        ".aaa..aaa.",
+        ".aa....aa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "canvas_workpants", "name": "Canvas Workpants", "kind": "legs",
+      "desc": "Nine pockets, all full of purpose. +2 DEF.",
+      "def": 2, "value": 30, "tier": 1,
+      "palette": { "a": "#a08a5c", "b": "#6e5c38" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        ".aab..baa.",
+        ".aaa..aaa.",
+        ".aba..aba.",
+        ".aaa..aaa.",
+        ".baa..aab.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "riveted_jeans", "name": "Riveted Work Jeans", "kind": "legs",
+      "desc": "Invented for miners, not for malls. +3 DEF, +5 SPD.",
+      "def": 3, "spd": 5, "value": 90, "tier": 2,
+      "palette": { "a": "#3a5a9a", "b": "#243a68", "g": "#c8a030" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".agaaaaga.",
+        ".aab..baa.",
+        ".aaa..aaa.",
+        ".aaa..aaa.",
+        ".aaa..aaa.",
+        ".baa..aab.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "plate_leggings", "name": "Commune Plate Leggings", "kind": "legs",
+      "desc": "Forged in the collective smithy. +5 DEF.",
+      "def": 5, "value": 160, "tier": 3,
+      "palette": { "a": "#aab8c4", "b": "#6a7884" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        ".aab..baa.",
+        ".bab..bab.",
+        ".aab..baa.",
+        ".bab..bab.",
+        ".bbb..bbb.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "garden_clogs", "name": "Community Garden Clogs", "kind": "boots",
+      "desc": "Soil-tested, comrade-approved. +5 SPD, +1 DEF.",
+      "spd": 5, "def": 1, "value": 14, "tier": 1,
+      "palette": { "a": "#6a8a4a", "b": "#465c30" },
+      "sprite": [
+        "..........",
+        "..........",
+        ".aa...aa..",
+        ".aa...aa..",
+        ".aab..aab.",
+        ".aaab.aaab",
+        ".bbbb.bbbb",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "steel_toes", "name": "Steel-Toe Boots", "kind": "boots",
+      "desc": "OSHA's finest, kicking upward. +12 SPD, +2 DEF.",
+      "spd": 12, "def": 2, "value": 80, "tier": 2,
+      "palette": { "a": "#7a5230", "b": "#4e3018", "s": "#b8c4cc" },
+      "sprite": [
+        "..........",
+        "..........",
+        ".aa...aa..",
+        ".aa...aa..",
+        ".aab..aab.",
+        ".saab.saab",
+        ".ssbb.ssbb",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "wingtip_liberators", "name": "Wing-Tip Liberators", "kind": "boots",
+      "desc": "Repossessed from a fleeing executive. +25 SPD, +2 DEF.",
+      "spd": 25, "def": 2, "value": 200, "tier": 3,
+      "palette": { "a": "#3a3440", "b": "#241e2b", "w": "#ffd24a" },
+      "sprite": [
+        "..........",
+        "..........",
+        ".aa...aa..",
+        ".aaw..aaw.",
+        ".aab..aab.",
+        ".aaab.aaab",
+        ".wbbb.wbbb",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "tin_ring", "name": "Tin Ring", "kind": "ring",
+      "desc": "Worth little, means much. +3 max HP, +2 MP.",
+      "hp": 3, "mp": 2, "value": 8, "tier": 1,
+      "palette": { "a": "#b8c4cc", "b": "#7a848c" },
+      "sprite": [
+        "..........",
+        "..........",
+        "...aaaa...",
+        "..ab..ba..",
+        "..a....a..",
+        "..a....a..",
+        "..ab..ba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "nurses_band", "name": "Nurse's Band", "kind": "ring",
+      "desc": "Twelve-hour shifts of pure grit. +10 max HP.",
+      "hp": 10, "value": 60, "tier": 2,
+      "palette": { "a": "#e8e8e8", "b": "#aaaaaa", "r": "#cc2233" },
+      "sprite": [
+        "..........",
+        "....rr....",
+        "...aaaa...",
+        "..ab..ba..",
+        "..a....a..",
+        "..a....a..",
+        "..ab..ba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "commons_ring", "name": "Ring of the Commons", "kind": "ring",
+      "desc": "Nobody owns it; you're just holding it. +2 ATK, +2 DEF, +10 HP, +10 MP.",
+      "atk": 2, "def": 2, "hp": 10, "mp": 10, "value": 260, "tier": 4,
+      "palette": { "a": "#4fdc7f", "b": "#2a8a4a", "g": "#ffd24a" },
+      "sprite": [
+        "....gg....",
+        "...agga...",
+        "...aaaa...",
+        "..ab..ba..",
+        "..a....a..",
+        "..a....a..",
+        "..ab..ba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "soup_of_day", "name": "Soup of the Day", "kind": "potion",
+      "desc": "The day is 'every day', the price is 'free'. Heals 15 HP.",
+      "heal": 15, "value": 6, "tier": 1,
+      "palette": { "a": "#c87a3a", "b": "#8a4e20", "s": "#e8d8a0" },
+      "sprite": [
+        "..........",
+        "..........",
+        "..s.s.s...",
+        ".aaaaaaaa.",
+        ".abbbbbba.",
+        ".aabbbbaa.",
+        "..aaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "community_stew", "name": "Community Stew", "kind": "potion",
+      "desc": "Everyone brought something. Heals 45 HP.",
+      "heal": 45, "value": 30, "tier": 2,
+      "palette": { "a": "#8a5a2a", "b": "#5c3a18", "v": "#c04a4a", "g": "#6a8a4a" },
+      "sprite": [
+        "..........",
+        "..g.v.g...",
+        ".aaaaaaaa.",
+        ".abvbgbba.",
+        ".abbbbbba.",
+        ".aabbbbaa.",
+        "..aaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "strike_coffee", "name": "Strike Coffee", "kind": "potion",
+      "desc": "Brewed at 4am on a picket line. Restores 15 MP.",
+      "mana": 15, "value": 8, "tier": 1,
+      "palette": { "a": "#e8e8e8", "b": "#5c3a18", "s": "#aaaaaa" },
+      "sprite": [
+        "..........",
+        "...s.s....",
+        "..aaaaa...",
+        "..abbba.a.",
+        "..abbba.a.",
+        "..abbbaa..",
+        "..aaaaa...",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "union_tea", "name": "Union Hall Tea", "kind": "potion",
+      "desc": "Steeped in history. Heals 20 HP, restores 20 MP.",
+      "heal": 20, "mana": 20, "value": 35, "tier": 2,
+      "palette": { "a": "#4a8a5a", "b": "#2e5c3a", "w": "#e8e8e8" },
+      "sprite": [
+        "..........",
+        "...w.w....",
+        "..aaaaa...",
+        "..abbba.a.",
+        "..abbba.a.",
+        "..abbbaa..",
+        "..aaaaa...",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "first_aid", "name": "Street Medic Kit", "kind": "potion",
+      "desc": "Gauze, saline, and stubborn hope. Heals 55 HP.",
+      "heal": 55, "value": 45, "tier": 2,
+      "palette": { "a": "#e8e8e8", "b": "#aaaaaa", "r": "#cc2233" },
+      "sprite": [
+        "..........",
+        ".aaaaaaaa.",
+        ".aaarraaa.",
+        ".aarrrraa.",
+        ".aaarraaa.",
+        ".aaaaaaaa.",
+        ".bbbbbbbb.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "zine", "name": "Radical Zine", "kind": "potion",
+      "desc": "Photocopied wisdom. Restores 10 MP.",
+      "mana": 10, "value": 5, "tier": 1,
+      "palette": { "a": "#e8e0d0", "b": "#333333", "r": "#cc2233" },
+      "sprite": [
+        "..........",
+        ".aaaaaaa..",
+        ".abbabba..",
+        ".aaaaaaa..",
+        ".arrraaa..",
+        ".aaaaaaa..",
+        ".abbbbaa..",
+        ".aaaaaaa..",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "golden_apple", "name": "Golden Apple of Equity", "kind": "potion",
+      "desc": "Grown in the commons orchard. Heals 100 HP.",
+      "heal": 100, "value": 120, "tier": 3,
+      "palette": { "a": "#ffd24a", "b": "#b08a1a", "g": "#6a8a4a" },
+      "sprite": [
+        "....g.....",
+        "...gg.....",
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aaaabaaa.",
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "...aaaa...",
+        ".........."
+      ]
+    },
+    {
+      "id": "seed_packet", "name": "Heirloom Seed Packet", "kind": "potion",
+      "desc": "Patent-free since forever. Heals 8 HP, restores 8 MP.",
+      "heal": 8, "mana": 8, "value": 6, "tier": 1,
+      "palette": { "a": "#c8a468", "b": "#8a6a38", "g": "#6a8a4a" },
+      "sprite": [
+        "..........",
+        ".aaaaaaa..",
+        ".agggbaa..",
+        ".agbgbaa..",
+        ".abggbaa..",
+        ".aaaaaaa..",
+        ".aaaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
     }
   ]
 }

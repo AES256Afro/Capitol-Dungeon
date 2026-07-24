@@ -68,9 +68,19 @@ pub struct NpcDef {
     pub id: String,
     pub name: String,
     pub shopkeeper: bool,
+    pub fighter: bool,
+    pub hp: i32,
+    pub atk: i32,
     pub lines: Vec<String>,
     pub palette: HashMap<String, String>,
     pub sprite: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
+pub struct BanterDef {
+    pub a: String,
+    pub b: String,
 }
 
 #[derive(Deserialize, Clone, Default)]
@@ -122,6 +132,10 @@ struct AchievementsFile {
 struct GraffitiFile {
     graffiti: Vec<String>,
 }
+#[derive(Deserialize, Default)]
+struct BanterFile {
+    banter: Vec<BanterDef>,
+}
 
 pub struct Content {
     pub mobs: Vec<MobDef>,
@@ -130,6 +144,7 @@ pub struct Content {
     pub spells: Vec<SpellDef>,
     pub achievements: Vec<AchievementDef>,
     pub graffiti: Vec<String>,
+    pub banter: Vec<BanterDef>,
 }
 
 impl Content {
@@ -146,6 +161,7 @@ const DEFAULT_NPCS: &str = include_str!("../data/npcs.json");
 const DEFAULT_SPELLS: &str = include_str!("../data/spells.json");
 const DEFAULT_ACHIEVEMENTS: &str = include_str!("../data/achievements.json");
 const DEFAULT_GRAFFITI: &str = include_str!("../data/graffiti.json");
+const DEFAULT_BANTER: &str = include_str!("../data/banter.json");
 
 async fn load_or(path: &str, fallback: &str) -> String {
     match macroquad::file::load_string(path).await {
@@ -171,6 +187,7 @@ pub async fn load_content() -> Content {
     let spells_s = load_or("data/spells.json", DEFAULT_SPELLS).await;
     let ach_s = load_or("data/achievements.json", DEFAULT_ACHIEVEMENTS).await;
     let graf_s = load_or("data/graffiti.json", DEFAULT_GRAFFITI).await;
+    let banter_s = load_or("data/banter.json", DEFAULT_BANTER).await;
 
     let mobs: MobsFile = parse(&mobs_s, DEFAULT_MOBS, "mobs");
     let items: ItemsFile = parse(&items_s, DEFAULT_ITEMS, "items");
@@ -178,6 +195,7 @@ pub async fn load_content() -> Content {
     let spells: SpellsFile = parse(&spells_s, DEFAULT_SPELLS, "spells");
     let ach: AchievementsFile = parse(&ach_s, DEFAULT_ACHIEVEMENTS, "achievements");
     let graf: GraffitiFile = parse(&graf_s, DEFAULT_GRAFFITI, "graffiti");
+    let banter: BanterFile = parse(&banter_s, DEFAULT_BANTER, "banter");
 
     Content {
         mobs: mobs.mobs,
@@ -186,5 +204,6 @@ pub async fn load_content() -> Content {
         spells: spells.spells,
         achievements: ach.achievements,
         graffiti: graf.graffiti,
+        banter: banter.banter,
     }
 }

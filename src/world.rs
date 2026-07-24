@@ -13,10 +13,25 @@ pub struct ItemStack {
     pub qty: i32,
 }
 
+/// Sound/feedback events; the main loop drains these and plays SFX.
+pub enum GameEvent {
+    Swing,
+    Hit,
+    Kill,
+    Hurt,
+    Pickup,
+    LevelUp,
+    Cast,
+    Chest,
+    Rest,
+}
+
 pub struct Player {
     pub x: f32,
     pub y: f32,
     pub facing: Vec2,
+    pub kx: f32,
+    pub ky: f32,
     pub hp: i32,
     pub mp: i32,
     pub base_maxhp: i32,
@@ -40,6 +55,8 @@ impl Player {
             x: 0.0,
             y: 0.0,
             facing: vec2(0.0, 1.0),
+            kx: 0.0,
+            ky: 0.0,
             hp: 40,
             mp: 20,
             base_maxhp: 40,
@@ -110,6 +127,8 @@ pub struct Mob {
     pub def_idx: usize,
     pub x: f32,
     pub y: f32,
+    pub kx: f32,
+    pub ky: f32,
     pub hp: i32,
     pub maxhp: i32,
     pub atk: i32,
@@ -128,8 +147,31 @@ pub struct Npc {
     pub def_idx: usize,
     pub x: f32,
     pub y: f32,
+    pub home_x: f32,
+    pub home_y: f32,
+    pub wx: f32,
+    pub wy: f32,
+    pub wander_t: f32,
     pub say: String,
     pub say_t: f32,
+}
+
+/// Comrades out in the wild, fighting the good fight against the mobs.
+pub struct Fighter {
+    pub def_idx: usize,
+    pub x: f32,
+    pub y: f32,
+    pub kx: f32,
+    pub ky: f32,
+    pub hp: i32,
+    pub maxhp: i32,
+    pub atk: i32,
+    pub attack_cd: f32,
+    pub say: String,
+    pub say_t: f32,
+    pub say_cd: f32,
+    pub hurt: f32,
+    pub engaged: bool,
 }
 
 pub struct Chest {
@@ -150,6 +192,7 @@ pub struct Fct {
     pub y: f32,
     pub text: String,
     pub t: f32,
+    pub big: bool,
     pub color: (u8, u8, u8),
 }
 
@@ -161,21 +204,39 @@ pub struct Burst {
     pub color: String,
 }
 
+pub struct Particle {
+    pub x: f32,
+    pub y: f32,
+    pub vx: f32,
+    pub vy: f32,
+    pub t: f32,
+    pub color: (u8, u8, u8),
+}
+
 pub struct World {
     pub map: Map,
     pub player: Player,
     pub mobs: Vec<Mob>,
     pub npcs: Vec<Npc>,
+    pub fighters: Vec<Fighter>,
     pub chests: Vec<Chest>,
     pub drops: Vec<Drop>,
     pub fcts: Vec<Fct>,
     pub bursts: Vec<Burst>,
+    pub particles: Vec<Particle>,
+    pub events: Vec<GameEvent>,
     pub depth: i32,
     pub stats: HashMap<String, i64>,
     pub unlocked: HashSet<String>,
     pub toasts: VecDeque<(String, f32)>,
     pub shop_stock: Vec<String>,
     pub mp_regen: f32,
+    // game feel
+    pub shake: f32,
+    pub slowmo: f32,
+    // npc ambient chatter
+    pub banter_cd: f32,
+    pub pending_reply: Option<(usize, String, f32)>,
 }
 
 pub enum Interaction {
@@ -201,16 +262,23 @@ impl World {
             player: Player::new(),
             mobs: Vec::new(),
             npcs: Vec::new(),
+            fighters: Vec::new(),
             chests: Vec::new(),
             drops: Vec::new(),
             fcts: Vec::new(),
             bursts: Vec::new(),
+            particles: Vec::new(),
+            events: Vec::new(),
             depth: 1,
             stats: HashMap::new(),
             unlocked: HashSet::new(),
             toasts: VecDeque::new(),
             shop_stock: Vec::new(),
             mp_regen: 0.0,
+            shake: 0.0,
+            slowmo: 0.0,
+            banter_cd: 5.0,
+            pending_reply: None,
         };
         w.populate(content);
         w
@@ -229,10 +297,13 @@ impl World {
             .unwrap_or_else(|| dungeon::generate(self.depth, content.graffiti.len()));
         self.mobs.clear();
         self.npcs.clear();
+        self.fighters.clear();
         self.chests.clear();
         self.drops.clear();
         self.fcts.clear();
         self.bursts.clear();
+        self.particles.clear();
+        self.pending_reply = None;
         self.populate(content);
     }
 
@@ -257,6 +328,8 @@ impl World {
                 def_idx,
                 x: (tx as f32 + 0.5) * TILE,
                 y: (ty as f32 + 0.5) * TILE,
+                kx: 0.0,
+                ky: 0.0,
                 hp: scale_hp(def.hp, self.depth),
                 maxhp: scale_hp(def.hp, self.depth),
                 atk: scale_atk(def.atk, self.depth),
@@ -277,13 +350,7 @@ impl World {
         if self.map.has_shop {
             if let Some(sk) = content.npcs.iter().position(|n| n.shopkeeper) {
                 if let Some((tx, ty)) = spots.pop() {
-                    self.npcs.push(Npc {
-                        def_idx: sk,
-                        x: (tx as f32 + 0.5) * TILE,
-                        y: (ty as f32 + 0.5) * TILE,
-                        say: String::new(),
-                        say_t: 0.0,
-                    });
+                    self.spawn_npc(sk, tx, ty);
                 }
             }
         }
@@ -291,7 +358,7 @@ impl World {
             .npcs
             .iter()
             .enumerate()
-            .filter(|(_, n)| !n.shopkeeper)
+            .filter(|(_, n)| !n.shopkeeper && !n.fighter)
             .map(|(i, _)| i)
             .collect();
         for (tx, ty) in spots {
@@ -299,13 +366,43 @@ impl World {
                 break;
             }
             let def_idx = civilians[gen_range(0, civilians.len() as i32) as usize];
-            self.npcs.push(Npc {
-                def_idx,
-                x: (tx as f32 + 0.5) * TILE,
-                y: (ty as f32 + 0.5) * TILE,
-                say: String::new(),
-                say_t: 0.0,
-            });
+            self.spawn_npc(def_idx, tx, ty);
+        }
+
+        // comrade fighters out in the wild, holding the line
+        let fighter_defs: Vec<usize> = content
+            .npcs
+            .iter()
+            .enumerate()
+            .filter(|(_, n)| n.fighter)
+            .map(|(i, _)| i)
+            .collect();
+        if !fighter_defs.is_empty() && self.map.rooms.len() > 2 {
+            let n_fighters = gen_range(1, 4);
+            for _ in 0..n_fighters {
+                let ri = gen_range(1, self.map.rooms.len() as i32) as usize;
+                let r = self.map.rooms[ri];
+                let (cx, cy) = r.center();
+                let def_idx = fighter_defs[gen_range(0, fighter_defs.len() as i32) as usize];
+                let def = &content.npcs[def_idx];
+                let hp = scale_hp(def.hp.max(40), self.depth);
+                self.fighters.push(Fighter {
+                    def_idx,
+                    x: (cx as f32 + gen_range(-1.0_f32, 1.0_f32)) * TILE,
+                    y: (cy as f32 + gen_range(-1.0_f32, 1.0_f32)) * TILE,
+                    kx: 0.0,
+                    ky: 0.0,
+                    hp,
+                    maxhp: hp,
+                    atk: scale_atk(def.atk.max(5), self.depth),
+                    attack_cd: 0.0,
+                    say: String::new(),
+                    say_t: 0.0,
+                    say_cd: gen_range(2.0_f32, 6.0_f32),
+                    hurt: 0.0,
+                    engaged: false,
+                });
+            }
         }
 
         for &(tx, ty) in &self.map.chest_spots {
@@ -323,7 +420,7 @@ impl World {
                 .map(|i| i.id.as_str())
                 .collect();
             let mut guard = 0;
-            while self.shop_stock.len() < 6.min(pool.len()) && guard < 100 {
+            while self.shop_stock.len() < 8.min(pool.len()) && guard < 200 {
                 guard += 1;
                 let pick = pool[gen_range(0, pool.len() as i32) as usize];
                 if !self.shop_stock.iter().any(|s| s == pick) {
@@ -331,6 +428,23 @@ impl World {
                 }
             }
         }
+    }
+
+    fn spawn_npc(&mut self, def_idx: usize, tx: usize, ty: usize) {
+        let x = (tx as f32 + 0.5) * TILE;
+        let y = (ty as f32 + 0.5) * TILE;
+        self.npcs.push(Npc {
+            def_idx,
+            x,
+            y,
+            home_x: x,
+            home_y: y,
+            wx: x,
+            wy: y,
+            wander_t: gen_range(2.0_f32, 8.0_f32),
+            say: String::new(),
+            say_t: 0.0,
+        });
     }
 
     pub fn toast(&mut self, text: String) {
@@ -362,7 +476,7 @@ impl World {
             let v = self.stats.get(&a.stat).copied().unwrap_or(0);
             if v >= a.threshold {
                 self.unlocked.insert(a.id.clone());
-                newly.push(format!("🏆 Achievement: {} — {}", a.name, a.desc));
+                newly.push(format!("Achievement: {} — {}", a.name, a.desc));
             }
         }
         for t in newly {
@@ -370,13 +484,33 @@ impl World {
         }
     }
 
-    fn fct(&mut self, x: f32, y: f32, text: String, color: (u8, u8, u8)) {
-        self.fcts.push(Fct { x, y, text, t: 1.0, color });
+    fn fct(&mut self, x: f32, y: f32, text: String, big: bool, color: (u8, u8, u8)) {
+        self.fcts.push(Fct { x, y, text, t: 1.0, big, color });
+    }
+
+    fn spawn_particles(&mut self, x: f32, y: f32, n: usize, color: (u8, u8, u8)) {
+        for _ in 0..n {
+            let a = gen_range(0.0_f32, std::f32::consts::TAU);
+            let sp = gen_range(30.0_f32, 90.0_f32);
+            self.particles.push(Particle {
+                x,
+                y,
+                vx: a.cos() * sp,
+                vy: a.sin() * sp - 20.0,
+                t: gen_range(0.25_f32, 0.55_f32),
+                color,
+            });
+        }
     }
 
     // ---------- per-frame simulation ----------
 
-    pub fn update(&mut self, dt: f32, content: &Content, move_dir: Vec2, attack: bool, cast: Option<usize>) {
+    pub fn update(&mut self, real_dt: f32, content: &Content, move_dir: Vec2, attack: bool, cast: Option<usize>) {
+        // hit-stop: the world runs in slow motion for a few frames after impact
+        let dt = if self.slowmo > 0.0 { real_dt * 0.18 } else { real_dt };
+        self.slowmo = (self.slowmo - real_dt).max(0.0);
+        self.shake = (self.shake - real_dt * 22.0).max(0.0);
+
         let (atk_total, def_total, maxhp, maxmp, spd) = self.player.totals(content);
         self.player.hp = self.player.hp.min(maxhp);
         self.player.mp = self.player.mp.min(maxmp);
@@ -388,43 +522,64 @@ impl World {
             self.player.mp = (self.player.mp + 1).min(maxmp);
         }
 
-        // movement, axis-separated so we slide along walls
+        // movement + knockback, axis-separated so we slide along walls
         let hw = 5.0;
+        let mut vx = 0.0;
+        let mut vy = 0.0;
         if move_dir.length_squared() > 0.0 {
             let d = move_dir.normalize();
             self.player.facing = d;
-            let nx = self.player.x + d.x * spd * dt;
-            if self.map.box_free(nx, self.player.y, hw, hw) {
-                self.player.x = nx;
-            }
-            let ny = self.player.y + d.y * spd * dt;
-            if self.map.box_free(self.player.x, ny, hw, hw) {
-                self.player.y = ny;
-            }
+            vx = d.x * spd;
+            vy = d.y * spd;
+        }
+        vx += self.player.kx;
+        vy += self.player.ky;
+        self.player.kx *= 1.0 - (8.0 * dt).min(1.0);
+        self.player.ky *= 1.0 - (8.0 * dt).min(1.0);
+        let nx = self.player.x + vx * dt;
+        if self.map.box_free(nx, self.player.y, hw, hw) {
+            self.player.x = nx;
+        }
+        let ny = self.player.y + vy * dt;
+        if self.map.box_free(self.player.x, ny, hw, hw) {
+            self.player.y = ny;
         }
 
         self.player.attack_cd = (self.player.attack_cd - dt).max(0.0);
         self.player.swing = (self.player.swing - dt).max(0.0);
         self.player.hurt = (self.player.hurt - dt).max(0.0);
 
-        // melee swing
+        // melee swing: lunge forward, wide arc, crits, knockback
         if attack && self.player.attack_cd <= 0.0 {
-            self.player.attack_cd = 0.38;
+            self.player.attack_cd = 0.32;
             self.player.swing = 0.18;
-            let reach = self.player.facing * 13.0;
+            self.events.push(GameEvent::Swing);
+            // small lunge into the swing gives it body
+            let lx = self.player.x + self.player.facing.x * 5.0;
+            let ly = self.player.y + self.player.facing.y * 5.0;
+            if self.map.box_free(lx, ly, hw, hw) {
+                self.player.x = lx;
+                self.player.y = ly;
+            }
+            let reach = self.player.facing * 14.0;
             let px = self.player.x + reach.x;
             let py = self.player.y + reach.y;
             let mut hits: Vec<usize> = Vec::new();
             for (i, m) in self.mobs.iter().enumerate() {
                 let dx = m.x - px;
                 let dy = m.y - py;
-                if dx * dx + dy * dy < 15.0 * 15.0 {
+                if dx * dx + dy * dy < 17.0 * 17.0 {
                     hits.push(i);
                 }
             }
-            for i in hits {
-                let dmg = (atk_total - self.mobs[i].def + gen_range(0, 3)).max(1);
-                self.damage_mob(i, dmg, content);
+            let origin = (self.player.x, self.player.y);
+            for i in hits.into_iter().rev() {
+                let crit = gen_range(0, 100) < 12;
+                let mut dmg = (atk_total - self.mobs[i].def + gen_range(0, 3)).max(1);
+                if crit {
+                    dmg *= 2;
+                }
+                self.damage_mob(i, dmg, origin, crit, content);
             }
         }
 
@@ -433,22 +588,112 @@ impl World {
             self.cast_spell(slot, content);
         }
 
-        // mobs
+        // ---------- fighters attack mobs ----------
+        let mut fighter_attacks: HashMap<usize, i32> = HashMap::new();
+        for f in &mut self.fighters {
+            let def = &content.npcs[f.def_idx];
+            f.attack_cd = (f.attack_cd - dt).max(0.0);
+            f.hurt = (f.hurt - dt).max(0.0);
+            f.say_t = (f.say_t - dt).max(0.0);
+            f.kx *= 1.0 - (8.0 * dt).min(1.0);
+            f.ky *= 1.0 - (8.0 * dt).min(1.0);
+
+            let mut nearest: Option<(usize, f32)> = None;
+            for (mi, m) in self.mobs.iter().enumerate() {
+                let d2 = (m.x - f.x).powi(2) + (m.y - f.y).powi(2);
+                if d2 < (TILE * 8.0).powi(2) && nearest.map(|(_, bd)| d2 < bd).unwrap_or(true) {
+                    nearest = Some((mi, d2));
+                }
+            }
+            f.engaged = nearest.is_some();
+            if let Some((mi, d2)) = nearest {
+                // battle cries while fighting (rate-limited)
+                f.say_cd -= dt;
+                if f.say_cd <= 0.0 && !def.lines.is_empty() {
+                    f.say = def.lines[gen_range(0, def.lines.len() as i32) as usize].clone();
+                    f.say_t = 3.0;
+                    f.say_cd = gen_range(7.0_f32, 15.0_f32);
+                }
+                let d = d2.sqrt().max(0.001);
+                let (mx, my) = (self.mobs[mi].x, self.mobs[mi].y);
+                if d > 14.0 {
+                    let step = 62.0 * dt;
+                    let sx = f.x + (mx - f.x) / d * step + f.kx * dt;
+                    let sy = f.y + (my - f.y) / d * step + f.ky * dt;
+                    if self.map.box_free(sx, f.y, hw, hw) {
+                        f.x = sx;
+                    }
+                    if self.map.box_free(f.x, sy, hw, hw) {
+                        f.y = sy;
+                    }
+                } else if f.attack_cd <= 0.0 {
+                    f.attack_cd = 0.7;
+                    let dmg = (f.atk + gen_range(0, 3)).max(1);
+                    *fighter_attacks.entry(mi).or_insert(0) += dmg;
+                }
+            } else {
+                // drift while idle
+                f.x += f.kx * dt;
+                f.y += f.ky * dt;
+            }
+        }
+        // apply fighter damage, highest index first so removals don't shift targets
+        let mut fa: Vec<(usize, i32)> = fighter_attacks.into_iter().collect();
+        fa.sort_by(|a, b| b.0.cmp(&a.0));
+        for (mi, dmg) in fa {
+            if mi < self.mobs.len() {
+                let origin = (self.mobs[mi].x + gen_range(-8.0_f32, 8.0_f32), self.mobs[mi].y + 8.0);
+                self.damage_mob(mi, dmg, origin, false, content);
+            }
+        }
+
+        // ---------- mobs: pick a target (player or nearest fighter) ----------
         let px = self.player.x;
         let py = self.player.y;
+        let player_safe = self.map.tile_at_px(px, py).safe();
+        let fighter_pos: Vec<(f32, f32)> = self.fighters.iter().map(|f| (f.x, f.y)).collect();
         let mut dmg_to_player = 0;
+        let mut hurt_from: Option<(f32, f32)> = None;
+        let mut fighter_dmg: HashMap<usize, i32> = HashMap::new();
+
         for m in &mut self.mobs {
             let def = &content.mobs[m.def_idx];
             m.attack_cd = (m.attack_cd - dt).max(0.0);
             m.hurt = (m.hurt - dt).max(0.0);
             m.say_t = (m.say_t - dt).max(0.0);
-            let dx = px - m.x;
-            let dy = py - m.y;
-            let dist2 = dx * dx + dy * dy;
-            let aggro_r = if m.boss { TILE * 12.0 } else { TILE * 7.5 };
-            m.aggro = dist2 < aggro_r * aggro_r && !self.map.tile_at_px(px, py).safe();
 
-            if m.aggro {
+            // knockback decays and slides along walls
+            if m.kx.abs() + m.ky.abs() > 1.0 {
+                let sx = m.x + m.kx * dt;
+                let sy = m.y + m.ky * dt;
+                if self.map.box_free(sx, m.y, 5.0, 5.0) {
+                    m.x = sx;
+                }
+                if self.map.box_free(m.x, sy, 5.0, 5.0) {
+                    m.y = sy;
+                }
+            }
+            m.kx *= 1.0 - (7.0 * dt).min(1.0);
+            m.ky *= 1.0 - (7.0 * dt).min(1.0);
+
+            // nearest legitimate target: the player (outside safe rooms) or a fighter
+            let aggro_r = if m.boss { TILE * 12.0 } else { TILE * 7.5 };
+            let mut target: Option<(f32, f32, Option<usize>, f32)> = None;
+            if !player_safe {
+                let d2 = (px - m.x).powi(2) + (py - m.y).powi(2);
+                if d2 < aggro_r * aggro_r {
+                    target = Some((px, py, None, d2));
+                }
+            }
+            for (fi, &(fx, fy)) in fighter_pos.iter().enumerate() {
+                let d2 = (fx - m.x).powi(2) + (fy - m.y).powi(2);
+                if d2 < aggro_r * aggro_r && target.map(|(_, _, _, bd)| d2 < bd).unwrap_or(true) {
+                    target = Some((fx, fy, Some(fi), d2));
+                }
+            }
+            m.aggro = target.is_some();
+
+            if let Some((tx, ty, fighter_idx, dist2)) = target {
                 // capitalist propaganda broadcast
                 m.say_cd -= dt;
                 if m.say_cd <= 0.0 && !def.lines.is_empty() {
@@ -458,6 +703,8 @@ impl World {
                 }
 
                 let dist = dist2.sqrt().max(0.001);
+                let dx = tx - m.x;
+                let dy = ty - m.y;
                 if dist > 12.0 {
                     let step = m.speed * dt;
                     let sx = m.x + dx / dist * step;
@@ -472,16 +719,56 @@ impl World {
                 }
                 if dist < 15.0 && m.attack_cd <= 0.0 {
                     m.attack_cd = 0.9;
-                    let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
-                    dmg_to_player += dmg;
+                    match fighter_idx {
+                        None => {
+                            let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
+                            dmg_to_player += dmg;
+                            hurt_from = Some((m.x, m.y));
+                        }
+                        Some(fi) => {
+                            let dmg = (m.atk + gen_range(0, 2)).max(1);
+                            *fighter_dmg.entry(fi).or_insert(0) += dmg;
+                        }
+                    }
                 }
             }
         }
+
         if dmg_to_player > 0 {
             self.player.hp -= dmg_to_player;
             self.player.hurt = 0.25;
+            self.shake += 4.0;
+            self.slowmo = self.slowmo.max(0.04);
+            self.events.push(GameEvent::Hurt);
+            if let Some((ax, ay)) = hurt_from {
+                let d = ((px - ax).powi(2) + (py - ay).powi(2)).sqrt().max(0.001);
+                self.player.kx += (px - ax) / d * 120.0;
+                self.player.ky += (py - ay) / d * 120.0;
+            }
             let (x, y) = (self.player.x, self.player.y);
-            self.fct(x, y - 10.0, format!("-{}", dmg_to_player), (255, 80, 80));
+            self.spawn_particles(x, y, 5, (255, 90, 90));
+            self.fct(x, y - 10.0, format!("-{}", dmg_to_player), false, (255, 80, 80));
+        }
+
+        // wounded comrades
+        let mut fallen: Vec<usize> = Vec::new();
+        for (fi, dmg) in fighter_dmg {
+            if fi < self.fighters.len() {
+                self.fighters[fi].hp -= dmg;
+                self.fighters[fi].hurt = 0.2;
+                let (fx, fy) = (self.fighters[fi].x, self.fighters[fi].y);
+                self.fct(fx, fy - 10.0, format!("-{}", dmg), false, (255, 150, 150));
+                if self.fighters[fi].hp <= 0 {
+                    fallen.push(fi);
+                }
+            }
+        }
+        fallen.sort_by(|a, b| b.cmp(a));
+        for fi in fallen {
+            let f = self.fighters.remove(fi);
+            let name = content.npcs[f.def_idx].name.clone();
+            self.spawn_particles(f.x, f.y, 14, (220, 60, 60));
+            self.toast(format!("{} has fallen. The commune mourns — and remembers.", name));
         }
 
         // pick up drops by walking over them
@@ -498,10 +785,14 @@ impl World {
             let id = self.drops[i].item.clone();
             if self.player.add_item(&id) {
                 let name = content.item(&id).map(|d| d.name.clone()).unwrap_or(id.clone());
+                self.events.push(GameEvent::Pickup);
                 self.toast(format!("Picked up: {}", name));
                 self.drops.remove(i);
             }
         }
+
+        // ---------- npc life: wandering + chatting with each other ----------
+        self.update_npcs(dt, content);
 
         // effects decay
         for f in &mut self.fcts {
@@ -513,17 +804,21 @@ impl World {
             b.t -= dt;
         }
         self.bursts.retain(|b| b.t > 0.0);
-        for n in &mut self.npcs {
-            n.say_t = (n.say_t - dt).max(0.0);
+        for p in &mut self.particles {
+            p.t -= dt;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += 160.0 * dt;
         }
+        self.particles.retain(|p| p.t > 0.0);
         if let Some(front) = self.toasts.front_mut() {
-            front.1 -= dt;
+            front.1 -= real_dt;
             if front.1 <= 0.0 {
                 self.toasts.pop_front();
             }
         }
 
-        // xp already applied on kill; check level-ups
+        // level-ups
         while self.player.xp >= self.player.xp_to_next() {
             self.player.xp -= self.player.xp_to_next();
             self.player.level += 1;
@@ -536,6 +831,9 @@ impl World {
             let (_, _, mh, mm, _) = self.player.totals(content);
             self.player.hp = mh;
             self.player.mp = mm;
+            self.events.push(GameEvent::LevelUp);
+            let (x, y) = (self.player.x, self.player.y);
+            self.spawn_particles(x, y, 16, (255, 220, 90));
             self.toast(format!(
                 "Level {}! The movement grows stronger.",
                 self.player.level
@@ -543,21 +841,123 @@ impl World {
             self.bump_stat_max("level", self.player.level as i64, content);
             for s in &content.spells {
                 if s.unlock_level == self.player.level {
-                    self.toast(format!("✨ New spell: {} — {}", s.name, s.desc));
+                    self.toast(format!("New spell: {} — {}", s.name, s.desc));
                 }
             }
         }
         self.bump_stat_max("gold", self.player.gold, content);
     }
 
-    fn damage_mob(&mut self, i: usize, dmg: i32, content: &Content) {
+    fn update_npcs(&mut self, dt: f32, content: &Content) {
+        // gentle wandering near home (shopkeepers stay put so you can find them)
+        for n in &mut self.npcs {
+            n.say_t = (n.say_t - dt).max(0.0);
+            let def = &content.npcs[n.def_idx];
+            if def.shopkeeper {
+                continue;
+            }
+            n.wander_t -= dt;
+            if n.wander_t <= 0.0 {
+                n.wander_t = gen_range(3.0_f32, 9.0_f32);
+                n.wx = n.home_x + gen_range(-1.6_f32, 1.6_f32) * TILE;
+                n.wy = n.home_y + gen_range(-1.6_f32, 1.6_f32) * TILE;
+            }
+            let dx = n.wx - n.x;
+            let dy = n.wy - n.y;
+            let d = (dx * dx + dy * dy).sqrt();
+            if d > 3.0 {
+                let step = 22.0 * dt;
+                let sx = n.x + dx / d * step;
+                let sy = n.y + dy / d * step;
+                // NPCs keep to the safe zone
+                if self.map.tile_at_px(sx, n.y).safe() {
+                    n.x = sx;
+                }
+                if self.map.tile_at_px(n.x, sy).safe() {
+                    n.y = sy;
+                }
+            }
+        }
+
+        // a queued banter reply lands after a beat
+        if let Some((idx, text, delay)) = &mut self.pending_reply {
+            *delay -= dt;
+            if *delay <= 0.0 {
+                let idx = *idx;
+                let text = text.clone();
+                if let Some(n) = self.npcs.get_mut(idx) {
+                    n.say = text;
+                    n.say_t = 4.5;
+                }
+                self.pending_reply = None;
+            }
+        }
+
+        // occasionally, two nearby comrades strike up a conversation
+        self.banter_cd -= dt;
+        if self.banter_cd <= 0.0 {
+            self.banter_cd = gen_range(9.0_f32, 18.0_f32);
+            // only bother when the player can see the safe room
+            let (px, py) = (self.player.x, self.player.y);
+            let near_player: Vec<usize> = self
+                .npcs
+                .iter()
+                .enumerate()
+                .filter(|(_, n)| (n.x - px).powi(2) + (n.y - py).powi(2) < (TILE * 16.0).powi(2))
+                .filter(|(_, n)| n.say_t <= 0.0)
+                .map(|(i, _)| i)
+                .collect();
+            let mut pair: Option<(usize, usize)> = None;
+            'outer: for &a in &near_player {
+                for &b in &near_player {
+                    if a != b {
+                        let (na, nb) = (&self.npcs[a], &self.npcs[b]);
+                        if (na.x - nb.x).powi(2) + (na.y - nb.y).powi(2) < (TILE * 4.0).powi(2) {
+                            pair = Some((a, b));
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+            if let Some((a, b)) = pair {
+                if !content.banter.is_empty() && self.pending_reply.is_none() {
+                    let line = &content.banter[gen_range(0, content.banter.len() as i32) as usize];
+                    self.npcs[a].say = line.a.clone();
+                    self.npcs[a].say_t = 4.0;
+                    self.pending_reply = Some((b, line.b.clone(), 2.0));
+                }
+            } else if let Some(&i) = near_player.first() {
+                // no partner around: an occasional line to themselves
+                let def = &content.npcs[self.npcs[i].def_idx];
+                if !def.lines.is_empty() && gen_range(0, 100) < 40 {
+                    self.npcs[i].say = def.lines[gen_range(0, def.lines.len() as i32) as usize].clone();
+                    self.npcs[i].say_t = 4.0;
+                }
+            }
+        }
+    }
+
+    fn damage_mob(&mut self, i: usize, dmg: i32, origin: (f32, f32), crit: bool, content: &Content) {
         if i >= self.mobs.len() {
             return;
         }
         self.mobs[i].hp -= dmg;
         self.mobs[i].hurt = 0.2;
+        // knock the target away from whoever hit it — heavier for crits, bosses resist
         let (mx, my) = (self.mobs[i].x, self.mobs[i].y);
-        self.fct(mx, my - 10.0, format!("{}", dmg), (255, 230, 120));
+        let d = ((mx - origin.0).powi(2) + (my - origin.1).powi(2)).sqrt().max(0.001);
+        let kb = if self.mobs[i].boss { 40.0 } else if crit { 220.0 } else { 140.0 };
+        self.mobs[i].kx += (mx - origin.0) / d * kb;
+        self.mobs[i].ky += (my - origin.1) / d * kb;
+        self.shake += if crit { 4.0 } else { 2.0 };
+        self.slowmo = self.slowmo.max(if crit { 0.07 } else { 0.03 });
+        self.events.push(GameEvent::Hit);
+        self.spawn_particles(mx, my, if crit { 8 } else { 4 }, (255, 230, 120));
+        if crit {
+            self.fct(mx, my - 12.0, format!("{}!", dmg), true, (255, 120, 60));
+        } else {
+            self.fct(mx, my - 10.0, format!("{}", dmg), false, (255, 230, 120));
+        }
         if self.mobs[i].hp <= 0 {
             self.kill_mob(i, content);
         }
@@ -566,6 +966,10 @@ impl World {
     fn kill_mob(&mut self, i: usize, content: &Content) {
         let m = self.mobs.remove(i);
         let def = content.mobs[m.def_idx].clone();
+        self.shake += if def.boss { 14.0 } else { 5.0 };
+        self.slowmo = self.slowmo.max(if def.boss { 0.25 } else { 0.09 });
+        self.events.push(GameEvent::Kill);
+        self.spawn_particles(m.x, m.y, if def.boss { 30 } else { 12 }, (255, 255, 255));
         let gold = if def.gold_max > def.gold_min {
             gen_range(def.gold_min, def.gold_max + 1) as i64
         } else {
@@ -574,7 +978,7 @@ impl World {
         self.player.gold += gold;
         self.player.xp += def.xp as i64;
         if gold > 0 {
-            self.fct(m.x, m.y - 4.0, format!("+{}g", gold), (255, 210, 74));
+            self.fct(m.x, m.y - 4.0, format!("+{}g", gold), false, (255, 210, 74));
         }
         for d in &def.drops {
             if gen_range(0.0_f32, 1.0_f32) < d.chance {
@@ -626,12 +1030,15 @@ impl World {
                 return;
             };
             self.player.mp -= spell.cost;
+            self.events.push(GameEvent::Cast);
             let (tx, ty) = (self.mobs[ti].x, self.mobs[ti].y);
             self.bursts.push(Burst { x: tx, y: ty, radius: 14.0, t: 0.3, color: spell.color.clone() });
-            self.damage_mob(ti, spell.damage, content);
+            self.damage_mob(ti, spell.damage, (px, py), false, content);
         } else if spell.damage > 0 && spell.radius > 0.0 {
             self.player.mp -= spell.cost;
+            self.events.push(GameEvent::Cast);
             let r = spell.radius * TILE;
+            self.shake += 6.0;
             self.bursts.push(Burst { x: px, y: py, radius: r, t: 0.45, color: spell.color.clone() });
             let hits: Vec<usize> = self
                 .mobs
@@ -641,10 +1048,11 @@ impl World {
                 .map(|(i, _)| i)
                 .collect();
             for i in hits.into_iter().rev() {
-                self.damage_mob(i, spell.damage, content);
+                self.damage_mob(i, spell.damage, (px, py), false, content);
             }
         } else if spell.heal > 0 {
             self.player.mp -= spell.cost;
+            self.events.push(GameEvent::Cast);
         } else {
             return;
         }
@@ -653,7 +1061,7 @@ impl World {
             let (_, _, maxhp, _, _) = self.player.totals(content);
             self.player.hp = (self.player.hp + spell.heal).min(maxhp);
             self.bursts.push(Burst { x: px, y: py, radius: 16.0, t: 0.4, color: "#4fdc7f".to_string() });
-            self.fct(px, py - 12.0, format!("+{}", spell.heal), (100, 240, 140));
+            self.fct(px, py - 12.0, format!("+{}", spell.heal), false, (100, 240, 140));
         }
     }
 
@@ -677,6 +1085,7 @@ impl World {
                     let (_, _, maxhp, maxmp, _) = self.player.totals(content);
                     self.player.hp = maxhp;
                     self.player.mp = maxmp;
+                    self.events.push(GameEvent::Rest);
                     self.add_stat("rests", 1, content);
                     return Interaction::Rested;
                 }
@@ -717,6 +1126,7 @@ impl World {
             let cy = (c.ty as f32 + 0.5) * TILE;
             if (cx - px).powi(2) + (cy - py).powi(2) < (TILE * 1.5).powi(2) {
                 self.chests[ci].opened = true;
+                self.events.push(GameEvent::Chest);
                 let gold = (gen_range(8, 20) + self.depth * 4) as i64;
                 self.player.gold += gold;
                 let mut text = format!("+{} gold for the strike fund", gold);

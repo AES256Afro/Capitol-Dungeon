@@ -1,14 +1,17 @@
+mod audio;
+mod charedit;
 mod content;
 mod dungeon;
 mod editor;
 mod sprites;
+mod touch;
 mod ui;
 mod world;
 
 use content::Content;
 use dungeon::CustomLevel;
 use macroquad::prelude::*;
-use world::{Interaction, World};
+use world::{GameEvent, Interaction, World};
 
 enum Screen {
     Menu,
@@ -19,6 +22,7 @@ enum Screen {
     Achievements,
     Dead,
     Editor,
+    CharEditor { sel: usize },
 }
 
 fn conf() -> Conf {
@@ -100,20 +104,46 @@ fn cast_input() -> Option<usize> {
     }
 }
 
+fn play_events(w: &mut World, sfx: &audio::Sfx) {
+    for ev in w.events.drain(..) {
+        match ev {
+            GameEvent::Swing => sfx.swing(),
+            GameEvent::Hit => sfx.hit(),
+            GameEvent::Kill => sfx.kill(),
+            GameEvent::Hurt => sfx.hurt(),
+            GameEvent::Pickup => sfx.pickup(),
+            GameEvent::LevelUp => sfx.levelup(),
+            GameEvent::Cast => sfx.cast(),
+            GameEvent::Chest => sfx.chest(),
+            GameEvent::Rest => sfx.rest(),
+        }
+    }
+}
+
 #[macroquad::main(conf)]
 async fn main() {
     macroquad::rand::srand(macroquad::miniquad::date::now() as u64);
     let content = content::load_content().await;
-    let textures = ui::build_textures(&content);
+    let mut look = charedit::load().await;
+    let mut textures = ui::build_textures(&content);
+    textures.set("player", look.build_texture());
+    let sfx = audio::Sfx::load_all().await;
     let mut custom: Option<CustomLevel> = load_custom_level().await;
 
     let mut world = World::new(&content);
     let mut started = false;
     let mut screen = Screen::Menu;
     let mut editor = editor::Editor::new();
+    let mut touch_ui = touch::TouchUi::new();
 
     loop {
         let dt = get_frame_time().min(0.05);
+        let known_spells = content
+            .spells
+            .iter()
+            .filter(|s| s.unlock_level <= world.player.level)
+            .count();
+        let tin = touch_ui.update(known_spells);
 
         match &mut screen {
             Screen::Menu => {
@@ -123,45 +153,57 @@ async fn main() {
                     let td = measure_text(msg, None, 18, 1.0);
                     draw_text(msg, (screen_width() - td.width) / 2.0, 200.0, 18.0, ui_gold());
                 }
-                if is_key_pressed(KeyCode::Enter) {
+                let tap_action = tin.taps.first().and_then(|t| ui::menu_hit(*t, custom.is_some()));
+                let want_start = is_key_pressed(KeyCode::Enter) || matches!(tap_action, Some(ui::MenuAction::Start));
+                let want_custom = (is_key_pressed(KeyCode::L) || matches!(tap_action, Some(ui::MenuAction::Custom))) && custom.is_some();
+                let want_char = is_key_pressed(KeyCode::C) || matches!(tap_action, Some(ui::MenuAction::CharEditor));
+                let want_editor = is_key_pressed(KeyCode::F9) || matches!(tap_action, Some(ui::MenuAction::Editor));
+
+                if want_start {
                     if !started {
                         world = World::new(&content);
                         started = true;
                     }
+                    sfx.ui();
                     screen = Screen::Play;
-                }
-                if is_key_pressed(KeyCode::N) {
+                } else if is_key_pressed(KeyCode::N) {
                     world = World::new(&content);
                     started = true;
+                    sfx.ui();
                     screen = Screen::Play;
-                }
-                if is_key_pressed(KeyCode::L) && custom.is_some() {
+                } else if want_custom {
                     world = World::new(&content);
                     world.load_level(&content, custom.as_ref());
                     world.toast("Playing your custom level. Nice work, architect.".to_string());
                     started = true;
                     screen = Screen::Play;
-                }
-                if is_key_pressed(KeyCode::F9) {
+                } else if want_char {
+                    sfx.ui();
+                    screen = Screen::CharEditor { sel: 0 };
+                } else if want_editor {
                     screen = Screen::Editor;
                 }
+                touch_ui.draw(0);
             }
 
             Screen::Play => {
-                let mv = movement_input();
-                let attack = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::J);
-                let cast = cast_input();
+                let mv = movement_input() + tin.mv;
+                let attack = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::J) || tin.attack;
+                let cast = cast_input().or(tin.cast);
                 world.update(dt, &content, mv, attack, cast);
+                play_events(&mut world, &sfx);
 
+                let interact = is_key_pressed(KeyCode::E) || tin.interact;
                 if world.player.hp <= 0 {
                     world.add_stat("deaths", 1, &content);
                     screen = Screen::Dead;
-                } else if is_key_pressed(KeyCode::E) {
+                } else if interact {
                     match world.interact(&content) {
                         Interaction::Dialog { who, text } => {
                             screen = Screen::Dialog { who, text };
                         }
                         Interaction::Shop => {
+                            sfx.ui();
                             screen = Screen::Shop { sel: 0, selling: false };
                         }
                         Interaction::Descend => {
@@ -175,7 +217,8 @@ async fn main() {
                         }
                         Interaction::None => {}
                     }
-                } else if is_key_pressed(KeyCode::I) {
+                } else if is_key_pressed(KeyCode::I) || tin.inventory {
+                    sfx.ui();
                     screen = Screen::Inventory { sel: 0, doll: false, doll_sel: 0 };
                 } else if is_key_pressed(KeyCode::V) {
                     screen = Screen::Achievements;
@@ -188,10 +231,12 @@ async fn main() {
                 clear_background(BLACK);
                 ui::draw_world(&world, &content, &textures);
                 ui::draw_hud(&world, &content);
+                touch_ui.draw(known_spells);
             }
 
             Screen::Inventory { sel, doll, doll_sel } => {
                 let cols = 6;
+                let mut close = is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::I) || tin.inventory;
                 if is_key_pressed(KeyCode::Tab) {
                     *doll = !*doll;
                 }
@@ -204,6 +249,7 @@ async fn main() {
                     }
                     if is_key_pressed(KeyCode::Enter) {
                         unequip(&mut world, &content, *doll_sel);
+                        sfx.ui();
                     }
                 } else {
                     if is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A) {
@@ -220,6 +266,7 @@ async fn main() {
                     }
                     if is_key_pressed(KeyCode::Enter) {
                         use_or_equip(&mut world, &content, *sel);
+                        sfx.ui();
                     }
                     if is_key_pressed(KeyCode::X) {
                         if let Some(st) = world.player.inventory.get(*sel) {
@@ -232,19 +279,46 @@ async fn main() {
                         }
                     }
                 }
-                let close = is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::I);
+                // touch: tap cell to select, tap again to use/equip; tap outside closes
+                for t in &tin.taps {
+                    match ui::inventory_hit(*t) {
+                        ui::InvHit::Cell(i) => {
+                            if !*doll && *sel == i {
+                                use_or_equip(&mut world, &content, i);
+                                sfx.ui();
+                            } else {
+                                *doll = false;
+                                *sel = i;
+                            }
+                        }
+                        ui::InvHit::Doll(i) => {
+                            if *doll && *doll_sel == i {
+                                unequip(&mut world, &content, i);
+                                sfx.ui();
+                            } else {
+                                *doll = true;
+                                *doll_sel = i;
+                            }
+                        }
+                        ui::InvHit::Outside => close = true,
+                        ui::InvHit::Inside => {}
+                    }
+                }
 
                 clear_background(BLACK);
                 ui::draw_world(&world, &content, &textures);
                 let (s, d, ds) = (*sel, *doll, *doll_sel);
                 dim();
                 ui::draw_inventory(&world, &content, &textures, s, d, ds);
+                touch_ui.draw(0);
                 if close {
                     screen = Screen::Play;
                 }
             }
 
             Screen::Shop { sel, selling } => {
+                let mut close = is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::E) || tin.interact;
+                let mut do_transact: Option<usize> = None;
                 if is_key_pressed(KeyCode::Tab) {
                     *selling = !*selling;
                     *sel = 0;
@@ -261,23 +335,46 @@ async fn main() {
                     *sel = (*sel + 1).min(list_len - 1);
                 }
                 if is_key_pressed(KeyCode::Enter) && list_len > 0 {
-                    let i = (*sel).min(list_len - 1);
+                    do_transact = Some((*sel).min(list_len - 1));
+                }
+                for t in &tin.taps {
+                    match ui::shop_hit(*t, *selling) {
+                        ui::ShopHit::Row(i) => {
+                            if i < list_len {
+                                if *sel == i {
+                                    do_transact = Some(i);
+                                } else {
+                                    *sel = i;
+                                }
+                            }
+                        }
+                        ui::ShopHit::ToggleTab => {
+                            *selling = !*selling;
+                            *sel = 0;
+                        }
+                        ui::ShopHit::Outside => close = true,
+                        ui::ShopHit::Inside => {}
+                    }
+                }
+                if let Some(i) = do_transact {
                     if *selling {
                         if let Some(st) = world.player.inventory.get(i) {
                             let id = st.id.clone();
                             if let Some(d) = content.item(&id).cloned() {
                                 world.player.remove_item(i);
                                 world.player.gold += (d.value / 2) as i64;
+                                sfx.pickup();
                                 world.toast(format!("Sold {} for {} gold.", d.name, d.value / 2));
                             }
                         }
-                    } else {
+                    } else if i < world.shop_stock.len() {
                         let id = world.shop_stock[i].clone();
                         if let Some(d) = content.item(&id).cloned() {
                             if world.player.gold >= d.value as i64 {
                                 if world.player.add_item(&id) {
                                     world.player.gold -= d.value as i64;
                                     world.add_stat("buys", 1, &content);
+                                    sfx.chest();
                                     world.toast(format!("Bought {} — receipt goes to the clinic fund.", d.name));
                                 } else {
                                     world.toast("Backpack is full.".to_string());
@@ -288,13 +385,13 @@ async fn main() {
                         }
                     }
                 }
-                let close = is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::E);
 
                 clear_background(BLACK);
                 ui::draw_world(&world, &content, &textures);
                 let (s, sl) = (*sel, *selling);
                 dim();
                 ui::draw_shop(&world, &content, &textures, s, sl);
+                touch_ui.draw(0);
                 if close {
                     screen = Screen::Play;
                 }
@@ -306,10 +403,14 @@ async fn main() {
                 ui::draw_world(&world, &content, &textures);
                 ui::draw_hud(&world, &content);
                 ui::draw_dialog(&w2, &t2);
+                touch_ui.draw(0);
                 if is_key_pressed(KeyCode::E)
                     || is_key_pressed(KeyCode::Escape)
                     || is_key_pressed(KeyCode::Enter)
                     || is_key_pressed(KeyCode::Space)
+                    || !tin.taps.is_empty()
+                    || tin.interact
+                    || tin.attack
                 {
                     screen = Screen::Play;
                 }
@@ -320,7 +421,8 @@ async fn main() {
                 ui::draw_world(&world, &content, &textures);
                 dim();
                 ui::draw_achievements(&world, &content);
-                if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::V) {
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::V) || !tin.taps.is_empty() {
                     screen = Screen::Play;
                 }
             }
@@ -329,7 +431,8 @@ async fn main() {
                 clear_background(BLACK);
                 ui::draw_world(&world, &content, &textures);
                 ui::draw_dead(&world);
-                if is_key_pressed(KeyCode::R) {
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::R) || !tin.taps.is_empty() {
                     let stats = world.stats.clone();
                     let unlocked = world.unlocked.clone();
                     world = World::new(&content);
@@ -357,6 +460,23 @@ async fn main() {
                     if is_key_pressed(KeyCode::Escape) {
                         screen = Screen::Menu;
                     }
+                }
+            }
+
+            Screen::CharEditor { sel } => {
+                if charedit::update(&mut look, sel, &tin.taps) {
+                    textures.set("player", look.build_texture());
+                    sfx.ui();
+                }
+                let done = is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape);
+                let player_tex = textures.get("player").cloned();
+                if let Some(t) = player_tex {
+                    charedit::draw(&look, *sel, &t);
+                }
+                touch_ui.draw(0);
+                if done {
+                    charedit::save(&look);
+                    screen = Screen::Menu;
                 }
             }
         }
