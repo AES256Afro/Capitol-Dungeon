@@ -62,6 +62,9 @@ impl ItemDef {
     pub fn is_usable(&self) -> bool {
         self.kind == "potion"
     }
+    pub fn is_throwable(&self) -> bool {
+        self.kind == "bomb" || self.kind == "oil"
+    }
 }
 
 #[derive(Deserialize, Clone, Default)]
@@ -206,6 +209,18 @@ struct QuestsFile {
     quests: Vec<QuestDef>,
 }
 
+/// The System's broadcast voice: categorized announcer lines plus mail pools.
+#[derive(Deserialize, Default)]
+#[serde(default)]
+pub struct SystemVoice {
+    pub categories: HashMap<String, Vec<String>>,
+    pub fan_senders: Vec<String>,
+    pub fan_lines: Vec<String>,
+    pub hate_senders: Vec<String>,
+    pub hate_lines: Vec<String>,
+    pub obituaries: Vec<String>,
+}
+
 pub struct Content {
     pub mobs: Vec<MobDef>,
     pub items: Vec<ItemDef>,
@@ -220,6 +235,7 @@ pub struct Content {
     pub prefixes: Vec<AffixDef>,
     pub suffixes: Vec<AffixDef>,
     pub quests: Vec<QuestDef>,
+    pub system: SystemVoice,
 }
 
 impl Content {
@@ -247,6 +263,7 @@ const DEFAULT_SKILLS: &str = include_str!("../data/skills.json");
 const DEFAULT_EMOTES: &str = include_str!("../data/emotes.json");
 const DEFAULT_AFFIXES: &str = include_str!("../data/affixes.json");
 const DEFAULT_QUESTS: &str = include_str!("../data/quests.json");
+const DEFAULT_SYSTEM: &str = include_str!("../data/system.json");
 
 async fn load_or(path: &str, fallback: &str) -> String {
     match macroquad::file::load_string(path).await {
@@ -277,6 +294,7 @@ pub async fn load_content() -> Content {
     let emotes_s = load_or("data/emotes.json", DEFAULT_EMOTES).await;
     let affixes_s = load_or("data/affixes.json", DEFAULT_AFFIXES).await;
     let quests_s = load_or("data/quests.json", DEFAULT_QUESTS).await;
+    let system_s = load_or("data/system.json", DEFAULT_SYSTEM).await;
 
     let mobs: MobsFile = parse(&mobs_s, DEFAULT_MOBS, "mobs");
     let items: ItemsFile = parse(&items_s, DEFAULT_ITEMS, "items");
@@ -289,6 +307,7 @@ pub async fn load_content() -> Content {
     let emotes: EmotesFile = parse(&emotes_s, DEFAULT_EMOTES, "emotes");
     let affixes: AffixesFile = parse(&affixes_s, DEFAULT_AFFIXES, "affixes");
     let quests: QuestsFile = parse(&quests_s, DEFAULT_QUESTS, "quests");
+    let system: SystemVoice = parse(&system_s, DEFAULT_SYSTEM, "system");
 
     Content {
         mobs: mobs.mobs,
@@ -304,5 +323,6 @@ pub async fn load_content() -> Content {
         prefixes: affixes.prefixes,
         suffixes: affixes.suffixes,
         quests: quests.quests,
+        system,
     }
 }

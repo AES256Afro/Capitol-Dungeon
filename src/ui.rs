@@ -165,11 +165,50 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
         draw_rectangle(sx + ts * 0.42, sy + ts * 0.42, s * 2.0, s * 2.0, pink);
     }
 
-    // chests
+    // oil patches (and burning oil)
+    for o in &world.oil {
+        let sx = o.tx as f32 * ts - cx;
+        let sy = o.ty as f32 * ts - cy;
+        draw_circle(sx + ts * 0.5, sy + ts * 0.5, ts * 0.42, Color::new(0.13, 0.1, 0.06, 0.75));
+        if o.lit {
+            let fl = ((get_time() * 13.0 + o.tx as f64).sin() * 0.5 + 0.5) as f32;
+            draw_circle(sx + ts * 0.5, sy + ts * 0.4, ts * (0.2 + fl * 0.12), hex("#ff9933"));
+            draw_circle(sx + ts * 0.5, sy + ts * 0.32, ts * (0.1 + fl * 0.08), hex("#ffe066"));
+        }
+    }
+
+    // chests + sponsor crates (tinted by tier)
     for c in &world.chests {
         let sx = c.tx as f32 * ts - cx;
         let sy = c.ty as f32 * ts - cy;
-        draw_sprite(tex, if c.opened { "chest_open" } else { "chest" }, sx, sy, ts);
+        let key = if c.opened { "chest_open" } else { "chest" };
+        if c.tier == 0 {
+            draw_sprite(tex, key, sx, sy, ts);
+        } else if let Some(t) = tex.get(key) {
+            let tint = match c.tier {
+                3 => hex("#ffe066"),
+                2 => hex("#d8e0e8"),
+                _ => hex("#e0a060"),
+            };
+            draw_texture_ex(t, sx, sy, tint, DrawTextureParams { dest_size: Some(vec2(ts, ts)), ..Default::default() });
+            if !c.opened {
+                let tw = ((get_time() * 5.0).sin() * 0.5 + 0.5) as f32;
+                draw_circle(sx + ts * 0.8, sy + ts * 0.1, s * 1.3, Color::new(1.0, 0.9, 0.4, tw));
+            }
+        }
+    }
+
+    // thrown dynamite and oil flasks
+    for p in &world.projectiles {
+        let sx = p.x * s - cx;
+        let sy = p.y * s - cy;
+        if p.oil {
+            draw_circle(sx, sy, s * 2.0, hex("#5a4632"));
+        } else {
+            draw_rectangle(sx - s * 1.2, sy - s * 2.0, s * 2.4, s * 4.0, hex("#c0392b"));
+            let spark = ((get_time() * 25.0).sin() * 0.5 + 0.5) as f32;
+            draw_circle(sx, sy - s * 2.6, s * (0.6 + spark * 0.6), hex("#ffe066"));
+        }
     }
 
     // drops (bobbing; affixed loot glints)
@@ -615,6 +654,34 @@ pub fn draw_hud(world: &World, content: &Content) {
         draw_text(&format!("FED {:.0}s", world.well_fed_t), 252.0, 48.0, 15.0, hex("#ffce7a"));
     }
 
+    // ---- THE BROADCAST ----
+    {
+        let pulse = ((get_time() * 3.0).sin() * 0.4 + 0.6) as f32;
+        let trend = if world.hype > 0.08 { "▲" } else if world.hype < 0.01 { "▼" } else { "•" };
+        let tcol = if world.hype > 0.08 { hex("#7fd47f") } else { hex("#8a7f9d") };
+        let label = format!("LIVE  {} viewers", fmt_viewers(world.viewers));
+        let td = measure_text(&label, None, 16, 1.0);
+        let bx = (screen_width() - td.width) / 2.0 - 14.0;
+        draw_rectangle(bx - 8.0, 8.0, td.width + 44.0, 22.0, Color::new(0.08, 0.02, 0.05, 0.75));
+        draw_circle(bx + 2.0, 19.0, 4.0, Color::new(1.0, 0.2, 0.25, pulse));
+        draw_text(&label, bx + 12.0, 24.0, 16.0, WHITE);
+        draw_text(trend, bx + td.width + 20.0, 24.0, 16.0, tcol);
+    }
+    // System announcement banner
+    if let Some((text, t)) = &world.announce {
+        let a = t.min(1.0);
+        let lines = wrap_text(text, 66);
+        let h = lines.len() as f32 * 18.0 + 14.0;
+        let w = 640.0_f32.min(screen_width() - 60.0);
+        let x = (screen_width() - w) / 2.0;
+        draw_rectangle(x, 36.0, w, h, Color::new(0.14, 0.04, 0.18, 0.85 * a));
+        draw_rectangle_lines(x, 36.0, w, h, 2.0, Color::new(0.83, 0.54, 1.0, 0.7 * a));
+        draw_text("◈ THE SYSTEM", x + 8.0, 50.0, 13.0, Color::new(0.83, 0.54, 1.0, a));
+        for (i, l) in lines.iter().enumerate() {
+            draw_text(l, x + 110.0, 51.0 + i as f32 * 18.0, 15.0, Color::new(1.0, 1.0, 1.0, a));
+        }
+    }
+
     // boss bar
     if let Some(b) = world.mobs.iter().find(|m| m.boss && m.aggro) {
         let def = &content.mobs[b.def_idx];
@@ -968,8 +1035,8 @@ pub fn draw_menu(has_custom: bool) {
     }
 
     let controls = [
-        "WASD/arrows move · Space attack · Shift dodge · 1-4 spells · E interact",
-        "I inventory · P skill tree · T chat log · V achievements · touch: stick + buttons",
+        "WASD/arrows move · Space attack · Shift dodge · G dynamite · F oil · 1-4 spells",
+        "E interact · I inventory · P skills · T chat log · V achievements · touch supported",
         "",
         "The fire is free. The clinic is free. The lessons are free.",
         "Everything else, the goblins financialized. Go fix that.",
@@ -993,6 +1060,18 @@ fn log_color(kind: LogKind) -> Color {
         LogKind::Enemy => hex("#ff9a8a"),
         LogKind::Comrade => hex("#9adcb4"),
         LogKind::System => hex("#ffd24a"),
+        LogKind::Broadcast => hex("#d48aff"),
+    }
+}
+
+fn fmt_viewers(v: f64) -> String {
+    let n = v as i64;
+    if n >= 1_000_000 {
+        format!("{:.1}M", n as f64 / 1_000_000.0)
+    } else if n >= 1_000 {
+        format!("{:.1}K", n as f64 / 1_000.0)
+    } else {
+        format!("{}", n)
     }
 }
 
@@ -1348,10 +1427,21 @@ pub fn draw_dead(world: &World) {
     );
     let sd = measure_text(&s, None, 20, 1.0);
     draw_text(&s, cx - sd.width / 2.0, 250.0, 20.0, WHITE);
+    if !world.last_hit_by.is_empty() {
+        let c = format!("Cause of death: {}. Broadcast to {} viewers.", world.last_hit_by, fmt_viewers(world.viewers));
+        let cd = measure_text(&c, None, 18, 1.0);
+        draw_text(&c, cx - cd.width / 2.0, 278.0, 18.0, hex("#ff9a8a"));
+    }
+    if !world.obituary.is_empty() {
+        for (i, l) in wrap_text(&world.obituary, 64).iter().enumerate() {
+            let ld = measure_text(l, None, 17, 1.0);
+            draw_text(l, cx - ld.width / 2.0, 304.0 + i as f32 * 20.0, 17.0, hex("#d48aff"));
+        }
+    }
     let m = "But the movement doesn't die with one member.";
     let md = measure_text(m, None, 20, 1.0);
-    draw_text(m, cx - md.width / 2.0, 290.0, 20.0, hex("#8a7f9d"));
+    draw_text(m, cx - md.width / 2.0, 344.0, 20.0, hex("#8a7f9d"));
     let r = "[R] Rise again (achievements persist)   [Esc] Menu";
     let rd = measure_text(r, None, 22, 1.0);
-    draw_text(r, cx - rd.width / 2.0, 350.0, 22.0, hex("#ffd24a"));
+    draw_text(r, cx - rd.width / 2.0, 404.0, 22.0, hex("#ffd24a"));
 }

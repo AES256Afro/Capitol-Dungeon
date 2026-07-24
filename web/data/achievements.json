@@ -1,22 +1,144 @@
 {
   "achievements": [
-    { "id": "first_blood", "name": "Seize the Means", "desc": "Defeat your first exploiter.", "stat": "kills", "threshold": 1 },
-    { "id": "organizer", "name": "Organizer", "desc": "Defeat 25 exploiters.", "stat": "kills", "threshold": 25 },
-    { "id": "vanguard", "name": "Vanguard", "desc": "Defeat 100 exploiters.", "stat": "kills", "threshold": 100 },
-    { "id": "hostile_takeover", "name": "Hostile Takeover Averted", "desc": "Defeat a Vulture Capitalist.", "stat": "bosses", "threshold": 1 },
-    { "id": "trust_buster", "name": "Trust Buster", "desc": "Defeat 3 Vulture Capitalists.", "stat": "bosses", "threshold": 3 },
-    { "id": "redistributor", "name": "Redistributor", "desc": "Open 10 treasure chests.", "stat": "chests", "threshold": 10 },
-    { "id": "deep_roots", "name": "Deep Roots", "desc": "Reach depth 5.", "stat": "depth", "threshold": 5 },
-    { "id": "underground_railroad", "name": "The Long Descent", "desc": "Reach depth 10.", "stat": "depth", "threshold": 10 },
-    { "id": "war_chest", "name": "Strike Fund", "desc": "Hold 500 gold at once.", "stat": "gold", "threshold": 500 },
-    { "id": "good_neighbor", "name": "Good Neighbor", "desc": "Talk with comrades 15 times.", "stat": "talks", "threshold": 15 },
-    { "id": "wall_reader", "name": "The Writing on the Wall", "desc": "Read 8 pieces of graffiti.", "stat": "graffiti", "threshold": 8 },
-    { "id": "seasoned", "name": "Class Conscious", "desc": "Reach character level 5.", "stat": "level", "threshold": 5 },
-    { "id": "elder_status", "name": "Elder of the Commons", "desc": "Reach character level 10.", "stat": "level", "threshold": 10 },
-    { "id": "well_read", "name": "Well Rested, Well Read", "desc": "Rest at 5 campfires.", "stat": "rests", "threshold": 5 },
-    { "id": "class_traitor", "name": "Cost of Doing Business", "desc": "Die once. The system is rigged.", "stat": "deaths", "threshold": 1 },
-    { "id": "shopaholic", "name": "Co-op Member", "desc": "Buy 5 items from the co-op.", "stat": "buys", "threshold": 5 },
-    { "id": "recruiter", "name": "Stronger Together", "desc": "Convince a comrade to fight beside you.", "stat": "recruits", "threshold": 1 },
-    { "id": "untouchable", "name": "Untouchable", "desc": "Dodge 50 times.", "stat": "dodges", "threshold": 50 }
+    {
+      "id": "first_blood",
+      "name": "Seize the Means",
+      "desc": "Defeat your first exploiter.",
+      "stat": "kills",
+      "threshold": 1
+    },
+    {
+      "id": "organizer",
+      "name": "Organizer",
+      "desc": "Defeat 25 exploiters.",
+      "stat": "kills",
+      "threshold": 25
+    },
+    {
+      "id": "vanguard",
+      "name": "Vanguard",
+      "desc": "Defeat 100 exploiters.",
+      "stat": "kills",
+      "threshold": 100
+    },
+    {
+      "id": "hostile_takeover",
+      "name": "Hostile Takeover Averted",
+      "desc": "Defeat a Vulture Capitalist.",
+      "stat": "bosses",
+      "threshold": 1
+    },
+    {
+      "id": "trust_buster",
+      "name": "Trust Buster",
+      "desc": "Defeat 3 Vulture Capitalists.",
+      "stat": "bosses",
+      "threshold": 3
+    },
+    {
+      "id": "redistributor",
+      "name": "Redistributor",
+      "desc": "Open 10 treasure chests.",
+      "stat": "chests",
+      "threshold": 10
+    },
+    {
+      "id": "deep_roots",
+      "name": "Deep Roots",
+      "desc": "Reach depth 5.",
+      "stat": "depth",
+      "threshold": 5
+    },
+    {
+      "id": "underground_railroad",
+      "name": "The Long Descent",
+      "desc": "Reach depth 10.",
+      "stat": "depth",
+      "threshold": 10
+    },
+    {
+      "id": "war_chest",
+      "name": "Strike Fund",
+      "desc": "Hold 500 gold at once.",
+      "stat": "gold",
+      "threshold": 500
+    },
+    {
+      "id": "good_neighbor",
+      "name": "Good Neighbor",
+      "desc": "Talk with comrades 15 times.",
+      "stat": "talks",
+      "threshold": 15
+    },
+    {
+      "id": "wall_reader",
+      "name": "The Writing on the Wall",
+      "desc": "Read 8 pieces of graffiti.",
+      "stat": "graffiti",
+      "threshold": 8
+    },
+    {
+      "id": "seasoned",
+      "name": "Class Conscious",
+      "desc": "Reach character level 5.",
+      "stat": "level",
+      "threshold": 5
+    },
+    {
+      "id": "elder_status",
+      "name": "Elder of the Commons",
+      "desc": "Reach character level 10.",
+      "stat": "level",
+      "threshold": 10
+    },
+    {
+      "id": "well_read",
+      "name": "Well Rested, Well Read",
+      "desc": "Rest at 5 campfires.",
+      "stat": "rests",
+      "threshold": 5
+    },
+    {
+      "id": "class_traitor",
+      "name": "Cost of Doing Business",
+      "desc": "Die once. The system is rigged.",
+      "stat": "deaths",
+      "threshold": 1
+    },
+    {
+      "id": "shopaholic",
+      "name": "Co-op Member",
+      "desc": "Buy 5 items from the co-op.",
+      "stat": "buys",
+      "threshold": 5
+    },
+    {
+      "id": "recruiter",
+      "name": "Stronger Together",
+      "desc": "Convince a comrade to fight beside you.",
+      "stat": "recruits",
+      "threshold": 1
+    },
+    {
+      "id": "untouchable",
+      "name": "Untouchable",
+      "desc": "Dodge 50 times.",
+      "stat": "dodges",
+      "threshold": 50
+    },
+    {
+      "id": "direct_action",
+      "name": "Direct Action",
+      "desc": "Detonate 10 sticks of dynamite.",
+      "stat": "bombs_exploded",
+      "threshold": 10
+    },
+    {
+      "id": "open_floor_plan",
+      "name": "Open Floor Plan",
+      "desc": "Demolish 25 walls.",
+      "stat": "walls_destroyed",
+      "threshold": 25
+    }
   ]
 }

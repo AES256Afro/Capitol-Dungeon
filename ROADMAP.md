@@ -89,3 +89,53 @@ The plan from here to v1.0. Checked items are already in the game.
 - Keep everything data-driven and moddable
 - Keep the browser build a single static folder
 - Keep the satire punching up
+
+
+## The Broadcast Arc (from the spiritual-successor design doc)
+
+### v0.8 — "You're Live" (SHIPPED)
+
+- [x] Sentient System AI announcer: categorized, data-driven snark
+      (`data/system.json`) with an on-screen banner and Broadcast log channel
+- [x] Live viewer count + hype trend on the HUD; kills, crits, bosses, and
+      explosions spike engagement
+- [x] Sponsor crates: viewer milestones airdrop Bronze/Silver/Gold crates
+      with guaranteed-affix loot
+- [x] Achievement boxes: every unlock ships with a Bronze Box (gold + hype)
+- [x] Fan mail & hate mail from named alien viewers (buffs included;
+      hate is still engagement)
+- [x] Floor cost-optimization timers: linger too long and the System
+      deploys "efficiency waves"
+- [x] Death broadcasts: cause-of-death + a System obituary on the death screen
+- [x] The System's footwear obsession (go bootless, get commentary)
+- [x] Explosive Engineering: Solidarity Dynamite (G) — friendly fire,
+      wall demolition, knockback, oil ignition
+- [x] Trap & Kiting: Slick Oil Flasks (F) — enemies slip; fire spreads
+
+### v0.9 — "Sweeps Week" (next)
+
+- [ ] Viewer micro-polls: periodic audience votes apply floor mutators
+      (double loot, elite spawns, low gravity knockback, fog)
+- [ ] Post-floor summary card: top play, damage dealt/taken, viewer rating
+- [ ] Leaderboards (local): best daily-run depth, fastest floor, kill records
+- [ ] Loot boxes as items: Bronze/Silver/Gold Weapon Boxes in drop tables
+- [ ] Appraisal skill: scan enemies for stats, weaknesses, and System snark
+- [ ] Trap rooms: pressure plates, dart walls — disarm and re-deploy on mobs
+- [ ] Corpse logistics: bodies persist, block corridors, attract scavenger
+      grubs that level up if left unchecked
+- [ ] Bounty events: high hype paints a bounty on you — hunter mini-elites
+
+### v1.0+ — "Season Finale" ideas from the doc
+
+- [ ] Race/class milestone picks at level thresholds
+- [ ] Companion leveling for recruited fighters (gear, stats, popularity)
+- [ ] Descent slots + stairwell guardians (boss gate every floor)
+- [ ] Sponsors offering pacts (stat boosts for gear ad placement)
+- [ ] Crawler-union events: coordinate with fighters, trigger System
+      union-busting waves
+- [ ] Secret glitched sub-floors behind demolished walls
+- [ ] Psychological decay meter cleared by campfires and companions
+
+Deliberate adaptations: our satire stays anti-vulture-capital (the System
+IS the corporate broadcaster); item and character names are original to
+Capitol Dungeon rather than borrowed from any book.

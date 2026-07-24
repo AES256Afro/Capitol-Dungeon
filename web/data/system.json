@@ -1,0 +1,82 @@
+{
+  "categories": {
+    "boss_aggro": [
+      "ATTENTION VIEWERS: Premium content detected. Ad-free deaths available with Dungeon+.",
+      "A Guardian engagement has begun. Sponsors, your logos are being polished as we speak.",
+      "This encounter is brought to you by nothing, because this crawler reads licenses.",
+      "Ratings spike detected. Do NOT disappoint the demographic, crawler.",
+      "Boss fight initiated. Our actuaries have adjusted your life expectancy accordingly."
+    ],
+    "level_up": [
+      "Crawler stats adjusted upward. This growth was made possible by viewers like you.",
+      "Congratulations. Your market value has increased. Your soul remains unlisted.",
+      "Level up recorded. Legal reminds you that power gained in-dungeon is non-transferable.",
+      "Personal growth detected. Monetizing it now."
+    ],
+    "sponsor_drop": [
+      "SPONSOR CRATE INBOUND. Contents legally distinct from happiness.",
+      "The audience loves you today. A crate of appreciation is falling toward your general area.",
+      "Engagement metrics exceeded projections. Deploying merchandise.",
+      "A sponsor has taken interest. Do try to die photogenically near their branding."
+    ],
+    "floor_warning": [
+      "REMINDER: This floor is scheduled for cost-optimization. Please conclude your business efficiently.",
+      "Facilities announcement: this floor's maintenance budget expires soon. So might you.",
+      "The floor manager has noticed you lingering. The floor manager is not paid to be patient."
+    ],
+    "cost_cutting": [
+      "Cost-cutting initiated. Redundant crawlers will be made redundant.",
+      "Efficiency wave deployed. The System thanks you for your continued attrition.",
+      "Downsizing in progress. You are the department being downsized."
+    ],
+    "barefoot": [
+      "Our sensors indicate NO FOOTWEAR. Sponsors are horrified. And strangely intrigued.",
+      "Crawler continues to operate without boots. Updating the liability waiver.",
+      "The footwear lobby has filed a formal complaint about your bare feet.",
+      "Podiatric analytics: concerning. Audience sentiment: inexplicably positive."
+    ],
+    "idle_mock": [
+      "Viewers are noticing a lack of content. Content is your job, crawler.",
+      "Standing still is not a monetizable activity. Exceptions apply for dramatic pauses.",
+      "The audience did not tune in to watch you appreciate the architecture."
+    ]
+  },
+  "fan_senders": [
+    "SoupEnjoyer_411",
+    "GrandmaOfNine__Sagittarius_Arm",
+    "UnionStrongTentacles",
+    "xX_RentIsTheft_Xx",
+    "ModeratelyWealthyCloudBeing",
+    "FirstTimeWatcher_LongTimeEgg",
+    "CollectiveOf12000Mites_Reformed",
+    "YourBiggestFanProbably"
+  ],
+  "fan_lines": [
+    "You fight like my third hatchling. That's a compliment. Sending snacks!",
+    "I've watched every crawl for 400 cycles. You're the first one who reads the walls.",
+    "We voted and you're our favorite. Don't tell the Vulture.",
+    "My whole pod does the fist thing now. Solidarity from the gas nebula!",
+    "Please stop getting hit. My translator renders your pain as opera."
+  ],
+  "hate_senders": [
+    "BigRentEnergy88",
+    "QuarterlyGrowthForever",
+    "LandlordSupremacyFanClub",
+    "TheAlgorithm_AltAccount",
+    "MiddleManagementEternal"
+  ],
+  "hate_lines": [
+    "You'll never beat the market. Nobody beats the market. I AM the market. Block me.",
+    "The Vulture carried that floor and you know it.",
+    "Unsubscribed. Re-subscribed to watch you fail. Unsubscribed again. Watching though.",
+    "My HOA and I are rooting against you.",
+    "This crawl is anti-business propaganda and I cannot stop watching."
+  ],
+  "obituaries": [
+    "The System thanks crawler for their engagement. Their organs have been recycled into content.",
+    "A moment of silence, sponsored by no one, because silence doesn't sell.",
+    "Crawler's final metrics were excellent. Shame about the crawler.",
+    "Cause of death has been clipped, remixed, and monetized. Rest well, crawler.",
+    "The audience rates this death 4.6 out of 5. Deductions for insufficient slow motion."
+  ]
+}

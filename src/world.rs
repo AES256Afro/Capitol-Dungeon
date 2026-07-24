@@ -119,6 +119,7 @@ pub enum GameEvent {
     Dash,
     Recruit,
     Quest,
+    Boom,
 }
 
 /// Commune upgrades purchasable at the campfire: (id, name, desc, cost).
@@ -291,6 +292,7 @@ pub struct Mob {
     pub aggro: bool,
     pub hurt: f32,
     pub boss: bool,
+    pub burn_acc: f32,
 }
 
 pub struct Npc {
@@ -329,6 +331,25 @@ pub struct Chest {
     pub tx: usize,
     pub ty: usize,
     pub opened: bool,
+    /// 0 = plain dungeon chest; 1-3 = bronze/silver/gold sponsor crates
+    pub tier: u8,
+}
+
+/// A thrown stick of dynamite or flask of oil, mid-flight.
+pub struct Projectile {
+    pub x: f32,
+    pub y: f32,
+    pub vx: f32,
+    pub vy: f32,
+    pub fuse: f32,
+    pub oil: bool,
+}
+
+pub struct OilPatch {
+    pub tx: i32,
+    pub ty: i32,
+    pub lit: bool,
+    pub life: f32,
 }
 
 pub struct Drop {
@@ -369,6 +390,7 @@ pub enum LogKind {
     Enemy,
     Comrade,
     System,
+    Broadcast,
 }
 
 pub struct LogEntry {
@@ -410,6 +432,21 @@ pub struct World {
     pub well_fed_t: f32,
     // daily-run determinism; None for normal runs
     pub fixed_seed: Option<u64>,
+    // the broadcast: viewer metrics, System announcements, floor pressure
+    pub projectiles: Vec<Projectile>,
+    pub oil: Vec<OilPatch>,
+    pub viewers: f64,
+    pub hype: f32,
+    pub last_sponsor: f64,
+    pub mail_cd: f32,
+    pub floor_time: f32,
+    pub floor_warned: bool,
+    pub wave_cd: f32,
+    pub barefoot_cd: f32,
+    pub announce: Option<(String, f32)>,
+    pub last_hit_by: String,
+    pub obituary: String,
+    pub player_burn_acc: f32,
 }
 
 pub enum Interaction {
@@ -458,6 +495,20 @@ impl World {
             commune: Vec::new(),
             well_fed_t: 0.0,
             fixed_seed: None,
+            projectiles: Vec::new(),
+            oil: Vec::new(),
+            viewers: 42_000.0,
+            hype: 0.0,
+            last_sponsor: 42_000.0,
+            mail_cd: 45.0,
+            floor_time: 0.0,
+            floor_warned: false,
+            wave_cd: 0.0,
+            barefoot_cd: 60.0,
+            announce: None,
+            last_hit_by: String::new(),
+            obituary: String::new(),
+            player_burn_acc: 0.0,
         };
         w.populate(content);
         w
@@ -494,6 +545,11 @@ impl World {
         self.bursts.clear();
         self.particles.clear();
         self.pending_reply = None;
+        self.projectiles.clear();
+        self.oil.clear();
+        self.floor_time = 0.0;
+        self.floor_warned = false;
+        self.wave_cd = 0.0;
         self.populate(content);
         for (i, mut f) in squad.into_iter().enumerate() {
             f.x = self.map.spawn.0 + (i as f32 + 1.0) * 12.0;
@@ -544,6 +600,7 @@ impl World {
                 aggro: false,
                 hurt: 0.0,
                 boss: def.boss,
+                burn_acc: 0.0,
             });
         }
 
@@ -609,7 +666,7 @@ impl World {
         }
 
         for &(tx, ty) in &self.map.chest_spots {
-            self.chests.push(Chest { tx, ty, opened: false });
+            self.chests.push(Chest { tx, ty, opened: false, tier: 0 });
         }
 
         // co-op stock: at-cost gear appropriate to the depth
@@ -695,7 +752,10 @@ impl World {
             }
         }
         for t in newly {
-            self.toast(t);
+            // every achievement ships with a Bronze Box, courtesy of the System
+            self.player.gold += 25;
+            self.hype += 0.2;
+            self.toast(format!("{} [Bronze Box: +25 gold]", t));
         }
     }
 
@@ -736,6 +796,7 @@ impl World {
             if self.player.poison_tick >= 0.8 {
                 self.player.poison_tick = 0.0;
                 self.player.hp -= 2;
+                self.last_hit_by = "compound interest (poison)".to_string();
                 let (x, y) = (self.player.x, self.player.y);
                 self.fct(x, y - 10.0, "-2".to_string(), false, (140, 220, 90));
             }
@@ -957,6 +1018,8 @@ impl World {
         let mut fighter_dmg: HashMap<usize, i32> = HashMap::new();
         let mut attackers: Vec<usize> = Vec::new();
         let mut inflicted: Option<String> = None;
+        let mut hurt_name: Option<String> = None;
+        let mut boss_engaged = false;
 
         for (mi, m) in self.mobs.iter_mut().enumerate() {
             let def = &content.mobs[m.def_idx];
@@ -980,6 +1043,7 @@ impl World {
 
             // nearest legitimate target: the player (outside safe rooms) or a fighter
             let aggro_r = if m.boss { TILE * 12.0 } else { TILE * 7.5 };
+            let was_aggro = m.aggro;
             let mut target: Option<(f32, f32, Option<usize>, f32)> = None;
             if !player_safe {
                 let d2 = (px - m.x).powi(2) + (py - m.y).powi(2);
@@ -994,6 +1058,9 @@ impl World {
                 }
             }
             m.aggro = target.is_some();
+            if m.boss && m.aggro && !was_aggro {
+                boss_engaged = true;
+            }
 
             if target.is_none() {
                 // idle exploiters near enough to watch occasionally emote
@@ -1025,7 +1092,11 @@ impl World {
                 let dy = ty - m.y;
                 // no creeping while winding up: they plant their feet to strike
                 if dist > 12.0 && m.windup <= 0.0 {
-                    let step = m.speed * dt;
+                    // oil underfoot: exploiters slip
+                    let mtx = (m.x / TILE) as i32;
+                    let mty = (m.y / TILE) as i32;
+                    let on_oil = self.oil.iter().any(|o| o.tx == mtx && o.ty == mty);
+                    let step = m.speed * dt * if on_oil { 0.5 } else { 1.0 };
                     let sx = m.x + dx / dist * step;
                     let sy = m.y + dy / dist * step;
                     let mhw = 5.0;
@@ -1051,6 +1122,7 @@ impl World {
                                     let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
                                     dmg_to_player += dmg;
                                     hurt_from = Some((m.x, m.y));
+                                    hurt_name = Some(def.name.clone());
                                     attackers.push(mi);
                                     if !def.inflicts.is_empty() {
                                         inflicted = Some(def.inflicts.clone());
@@ -1071,11 +1143,20 @@ impl World {
             }
         }
 
+        if boss_engaged {
+            self.system_say(content, "boss_aggro");
+            self.hype += 0.3;
+        }
+
         if dmg_to_player > 0 {
             self.player.hp -= dmg_to_player;
             self.player.hurt = 0.25;
             self.shake += 4.0;
             self.slowmo = self.slowmo.max(0.04);
+            self.hype += 0.04;
+            if let Some(name) = hurt_name.take() {
+                self.last_hit_by = name;
+            }
             self.events.push(GameEvent::Hurt);
             if let Some((ax, ay)) = hurt_from {
                 let d = ((px - ax).powi(2) + (py - ay).powi(2)).sqrt().max(0.001);
@@ -1171,6 +1252,11 @@ impl World {
 
         // ---------- npc life: wandering + chatting with each other ----------
         self.update_npcs(dt, content);
+
+        // ---------- the broadcast, explosives, and burning oil ----------
+        self.update_broadcast(dt, content);
+        self.update_projectiles(dt, content);
+        self.update_oil(dt, content);
 
         // effects decay
         for f in &mut self.fcts {
@@ -1392,6 +1478,7 @@ impl World {
                 });
             }
         }
+        self.hype += if def.boss { 0.5 } else { 0.06 };
         self.add_stat("kills", 1, content);
         self.add_stat(&format!("kills_{}", def.id), 1, content);
         if def.boss {
@@ -1508,6 +1595,381 @@ impl World {
         }
         let (prefix, suffix) = self.roll_affixes(content);
         ItemInst { id: id.to_string(), prefix, suffix }
+    }
+
+    /// The System says something. On camera. It always is.
+    pub fn system_say(&mut self, content: &Content, cat: &str) {
+        if let Some(lines) = content.system.categories.get(cat) {
+            if !lines.is_empty() {
+                let line = lines[gen_range(0, lines.len() as i32) as usize].clone();
+                self.announce = Some((line.clone(), 6.5));
+                self.log_push(LogKind::Broadcast, "THE SYSTEM", &line);
+            }
+        }
+    }
+
+    fn spawn_mob_at(&mut self, content: &Content, tier: i32, tx: i32, ty: i32) {
+        let pool: Vec<usize> = content
+            .mobs
+            .iter()
+            .enumerate()
+            .filter(|(_, m)| m.tier == tier)
+            .map(|(i, _)| i)
+            .collect();
+        if pool.is_empty() {
+            return;
+        }
+        let def_idx = pool[gen_range(0, pool.len() as i32) as usize];
+        let def = &content.mobs[def_idx];
+        self.mobs.push(Mob {
+            def_idx,
+            x: (tx as f32 + 0.5) * TILE,
+            y: (ty as f32 + 0.5) * TILE,
+            kx: 0.0,
+            ky: 0.0,
+            hp: scale_hp(def.hp, self.depth),
+            maxhp: scale_hp(def.hp, self.depth),
+            atk: scale_atk(def.atk, self.depth),
+            def: def.def,
+            speed: def.speed,
+            attack_cd: 0.5,
+            windup: 0.0,
+            say: String::new(),
+            say_t: 0.0,
+            say_cd: gen_range(1.0_f32, 4.0_f32),
+            aggro: false,
+            hurt: 0.0,
+            boss: def.boss,
+            burn_acc: 0.0,
+        });
+    }
+
+    /// Everything reality-TV: viewer counts, sponsor crates, mail, floor pressure.
+    fn update_broadcast(&mut self, dt: f32, content: &Content) {
+        // hype decays; viewers chase a baseline scaled by hype
+        self.hype = (self.hype - self.hype * 0.12 * dt).clamp(0.0, 2.0);
+        let kills = self.stats.get("kills").copied().unwrap_or(0) as f64;
+        let baseline = 40_000.0 + self.depth as f64 * 15_000.0 + kills * 400.0;
+        let target = baseline * (1.0 + self.hype as f64);
+        self.viewers += (target - self.viewers) * (dt as f64 * 0.4);
+
+        if let Some((_, t)) = &mut self.announce {
+            *t -= dt;
+            if *t <= 0.0 {
+                self.announce = None;
+            }
+        }
+
+        // sponsor crates at viewer milestones
+        if self.viewers > self.last_sponsor + 35_000.0 {
+            self.last_sponsor = self.viewers;
+            let tier: u8 = if self.viewers > 240_000.0 {
+                3
+            } else if self.viewers > 140_000.0 {
+                2
+            } else {
+                1
+            };
+            self.spawn_sponsor_crate(tier);
+            self.system_say(content, "sponsor_drop");
+        }
+
+        // viewer mail
+        self.mail_cd -= dt;
+        if self.mail_cd <= 0.0 {
+            self.mail_cd = gen_range(55.0_f32, 110.0_f32);
+            let sys = &content.system;
+            if gen_range(0, 100) < 58 && !sys.fan_senders.is_empty() && !sys.fan_lines.is_empty() {
+                let s = sys.fan_senders[gen_range(0, sys.fan_senders.len() as i32) as usize].clone();
+                let l = sys.fan_lines[gen_range(0, sys.fan_lines.len() as i32) as usize].clone();
+                let (_, _, maxhp, _, _) = self.player.totals(content);
+                self.player.hp = (self.player.hp + 5).min(maxhp);
+                self.hype += 0.1;
+                self.toast(format!("FAN MAIL from {}: \"{}\" (+5 HP)", s, l));
+            } else if !sys.hate_senders.is_empty() && !sys.hate_lines.is_empty() {
+                let s = sys.hate_senders[gen_range(0, sys.hate_senders.len() as i32) as usize].clone();
+                let l = sys.hate_lines[gen_range(0, sys.hate_lines.len() as i32) as usize].clone();
+                self.hype += 0.05; // hate is still engagement
+                self.toast(format!("HATE MAIL from {}: \"{}\"", s, l));
+            }
+        }
+
+        // floor cost-optimization pressure
+        self.floor_time += dt;
+        if self.floor_time > 240.0 && !self.floor_warned {
+            self.floor_warned = true;
+            self.system_say(content, "floor_warning");
+        }
+        if self.floor_time > 330.0 {
+            self.wave_cd -= dt;
+            if self.wave_cd <= 0.0 {
+                self.wave_cd = 60.0;
+                self.system_say(content, "cost_cutting");
+                let tier = (1 + (self.depth / 3).min(2)) as i32;
+                for _ in 0..2 {
+                    for _try in 0..25 {
+                        let tx = (self.player.x / TILE) as i32 + gen_range(-8, 9);
+                        let ty = (self.player.y / TILE) as i32 + gen_range(-8, 9);
+                        let far = (tx as f32 * TILE - self.player.x).abs() + (ty as f32 * TILE - self.player.y).abs() > TILE * 4.0;
+                        if far && self.map.tile(tx, ty) == Tile::Floor {
+                            self.spawn_mob_at(content, tier, tx, ty);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // the System's footwear obsession
+        self.barefoot_cd -= dt;
+        if self.barefoot_cd <= 0.0 {
+            self.barefoot_cd = gen_range(120.0_f32, 240.0_f32);
+            if !self.player.equipment.contains_key("boots") {
+                self.system_say(content, "barefoot");
+            }
+        }
+    }
+
+    fn spawn_sponsor_crate(&mut self, tier: u8) {
+        let ptx = (self.player.x / TILE) as i32;
+        let pty = (self.player.y / TILE) as i32;
+        for _ in 0..40 {
+            let tx = ptx + gen_range(-4, 5);
+            let ty = pty + gen_range(-4, 5);
+            if self.map.tile(tx, ty) == Tile::Floor
+                && !self.chests.iter().any(|c| c.tx == tx as usize && c.ty == ty as usize)
+            {
+                self.chests.push(Chest { tx: tx as usize, ty: ty as usize, opened: false, tier });
+                let name = match tier {
+                    3 => "GOLD",
+                    2 => "SILVER",
+                    _ => "BRONZE",
+                };
+                self.toast(format!("{} SPONSOR CRATE incoming — check your surroundings.", name));
+                return;
+            }
+        }
+    }
+
+    /// Throw the first bomb or oil flask in the backpack toward the facing direction.
+    pub fn throw_item(&mut self, content: &Content, kind: &str) -> bool {
+        let Some(idx) = self
+            .player
+            .inventory
+            .iter()
+            .position(|s| content.item(&s.inst.id).map(|d| d.kind == kind).unwrap_or(false))
+        else {
+            self.toast(format!(
+                "No {} in the backpack. The co-op sometimes stocks them.",
+                if kind == "bomb" { "dynamite" } else { "oil" }
+            ));
+            return false;
+        };
+        self.player.remove_item(idx);
+        let d = self.player.facing;
+        self.projectiles.push(Projectile {
+            x: self.player.x,
+            y: self.player.y - 4.0,
+            vx: d.x * 190.0,
+            vy: d.y * 190.0,
+            fuse: if kind == "bomb" { 1.0 } else { 0.55 },
+            oil: kind == "oil",
+        });
+        self.events.push(GameEvent::Dash);
+        if kind == "bomb" {
+            self.add_stat("bombs_thrown", 1, content);
+        }
+        true
+    }
+
+    fn update_projectiles(&mut self, dt: f32, content: &Content) {
+        let mut boom: Vec<(f32, f32, bool)> = Vec::new();
+        for p in &mut self.projectiles {
+            let nx = p.x + p.vx * dt;
+            let ny = p.y + p.vy * dt;
+            if self.map.box_free(nx, p.y, 3.0, 3.0) {
+                p.x = nx;
+            } else {
+                p.vx = 0.0;
+            }
+            if self.map.box_free(p.x, ny, 3.0, 3.0) {
+                p.y = ny;
+            } else {
+                p.vy = 0.0;
+            }
+            let damp = 1.0 - (2.6 * dt).min(1.0);
+            p.vx *= damp;
+            p.vy *= damp;
+            p.fuse -= dt;
+            if p.fuse <= 0.0 {
+                boom.push((p.x, p.y, p.oil));
+            }
+        }
+        self.projectiles.retain(|p| p.fuse > 0.0);
+        for (x, y, oil) in boom {
+            if oil {
+                self.splash_oil(x, y);
+            } else {
+                self.explode(x, y, content);
+            }
+        }
+    }
+
+    fn splash_oil(&mut self, x: f32, y: f32) {
+        let tx = (x / TILE) as i32;
+        let ty = (y / TILE) as i32;
+        for (dx, dy) in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)] {
+            let (ox, oy) = (tx + dx, ty + dy);
+            if self.map.tile(ox, oy).walkable() && !self.oil.iter().any(|o| o.tx == ox && o.ty == oy) {
+                self.oil.push(OilPatch { tx: ox, ty: oy, lit: false, life: 30.0 });
+            }
+        }
+        self.spawn_particles(x, y, 6, (90, 70, 50));
+    }
+
+    /// Dynamite: hurts exploiters, comrades, YOU, and load-bearing walls alike.
+    fn explode(&mut self, x: f32, y: f32, content: &Content) {
+        let r = TILE * 2.3;
+        self.shake += 14.0;
+        self.slowmo = self.slowmo.max(0.2);
+        self.hype += 0.15;
+        self.events.push(GameEvent::Boom);
+        self.spawn_particles(x, y, 30, (255, 180, 90));
+        self.bursts.push(Burst { x, y, radius: r, t: 0.45, color: "#ff9933".to_string() });
+
+        // demolish walls (never the map border)
+        let t0x = ((x - r) / TILE) as i32;
+        let t1x = ((x + r) / TILE) as i32;
+        let t0y = ((y - r) / TILE) as i32;
+        let t1y = ((y + r) / TILE) as i32;
+        let mut walls = 0;
+        for ty in t0y..=t1y {
+            for tx in t0x..=t1x {
+                let cx = (tx as f32 + 0.5) * TILE;
+                let cy = (ty as f32 + 0.5) * TILE;
+                if (cx - x).powi(2) + (cy - y).powi(2) < (r * 0.85).powi(2)
+                    && tx > 0
+                    && ty > 0
+                    && (tx as usize) < self.map.w - 1
+                    && (ty as usize) < self.map.h - 1
+                    && self.map.tile(tx, ty) == Tile::Wall
+                {
+                    self.map.set(tx, ty, Tile::Floor);
+                    self.map.graffiti.retain(|g| !(g.x == tx as usize && g.y == ty as usize));
+                    walls += 1;
+                }
+            }
+        }
+        if walls > 0 {
+            self.add_stat("walls_destroyed", walls, content);
+        }
+
+        // ignite nearby oil
+        for o in &mut self.oil {
+            let ox = (o.tx as f32 + 0.5) * TILE;
+            let oy = (o.ty as f32 + 0.5) * TILE;
+            if (ox - x).powi(2) + (oy - y).powi(2) < (r + TILE * 1.5).powi(2) {
+                o.lit = true;
+                o.life = o.life.min(7.0);
+            }
+        }
+
+        // damage mobs
+        let hits: Vec<usize> = self
+            .mobs
+            .iter()
+            .enumerate()
+            .filter(|(_, m)| (m.x - x).powi(2) + (m.y - y).powi(2) < r * r)
+            .map(|(i, _)| i)
+            .collect();
+        for i in hits.into_iter().rev() {
+            self.damage_mob(i, gen_range(26, 40), (x, y), false, 2.2, content);
+        }
+
+        // friendly fire: comrades
+        let mut fallen: Vec<usize> = Vec::new();
+        for (fi, f) in self.fighters.iter_mut().enumerate() {
+            if (f.x - x).powi(2) + (f.y - y).powi(2) < (r * 0.9).powi(2) {
+                f.hp -= 14;
+                f.hurt = 0.3;
+                if f.hp <= 0 {
+                    fallen.push(fi);
+                }
+            }
+        }
+        for fi in fallen.into_iter().rev() {
+            let f = self.fighters.remove(fi);
+            let name = content.npcs[f.def_idx].name.clone();
+            self.toast(format!("{} was caught in YOUR blast. The commune will remember that.", name));
+        }
+
+        // friendly fire: you
+        let pd2 = (self.player.x - x).powi(2) + (self.player.y - y).powi(2);
+        if pd2 < (r * 0.9).powi(2) && self.player.dodge_t <= 0.0 {
+            self.player.hp -= 16;
+            self.player.hurt = 0.3;
+            self.last_hit_by = "their own dynamite".to_string();
+            let d = pd2.sqrt().max(0.001);
+            self.player.kx += (self.player.x - x) / d * 260.0;
+            self.player.ky += (self.player.y - y) / d * 260.0;
+            let (px, py) = (self.player.x, self.player.y);
+            self.fct(px, py - 10.0, "-16".to_string(), true, (255, 120, 60));
+        }
+        self.add_stat("bombs_exploded", 1, content);
+    }
+
+    fn update_oil(&mut self, dt: f32, content: &Content) {
+        for o in &mut self.oil {
+            if o.lit {
+                o.life -= dt;
+            } else {
+                o.life -= dt * 0.2;
+            }
+        }
+        self.oil.retain(|o| o.life > 0.0);
+
+        // burning oil cooks whoever stands in it (mobs and player alike)
+        let lit: Vec<(i32, i32)> = self.oil.iter().filter(|o| o.lit).map(|o| (o.tx, o.ty)).collect();
+        if lit.is_empty() {
+            return;
+        }
+        let mut cooked: Vec<usize> = Vec::new();
+        for (mi, m) in self.mobs.iter_mut().enumerate() {
+            let mt = ((m.x / TILE) as i32, (m.y / TILE) as i32);
+            if lit.contains(&mt) {
+                m.burn_acc += 9.0 * dt;
+                if m.burn_acc >= 4.0 {
+                    m.burn_acc = 0.0;
+                    cooked.push(mi);
+                }
+            }
+        }
+        for mi in cooked.into_iter().rev() {
+            if mi < self.mobs.len() {
+                let origin = (self.mobs[mi].x, self.mobs[mi].y + 6.0);
+                self.damage_mob(mi, 4, origin, false, 0.3, content);
+            }
+        }
+        let pt = ((self.player.x / TILE) as i32, (self.player.y / TILE) as i32);
+        if lit.contains(&pt) {
+            self.player_burn_acc += 9.0 * dt;
+            if self.player_burn_acc >= 4.0 {
+                self.player_burn_acc = 0.0;
+                self.player.hp -= 4;
+                self.player.hurt = 0.2;
+                self.last_hit_by = "burning oil".to_string();
+                let (px, py) = (self.player.x, self.player.y);
+                self.fct(px, py - 10.0, "-4".to_string(), false, (255, 160, 60));
+            }
+        }
+    }
+
+    pub fn pick_obituary(&mut self, content: &Content) {
+        if self.obituary.is_empty() && !content.system.obituaries.is_empty() {
+            self.obituary = content.system.obituaries
+                [gen_range(0, content.system.obituaries.len() as i32) as usize]
+                .clone();
+        }
     }
 
     /// Complete any active quests whose target stat has advanced far enough.
@@ -1762,9 +2224,41 @@ impl World {
             if (cx - px).powi(2) + (cy - py).powi(2) < (TILE * 1.5).powi(2) {
                 self.chests[ci].opened = true;
                 self.events.push(GameEvent::Chest);
-                let gold = (gen_range(8, 20) + self.depth * 4) as i64;
+                let tier = self.chests[ci].tier;
+                let gold = (gen_range(8, 20) + self.depth * 4 + tier as i32 * 30) as i64;
                 self.player.gold += gold;
                 let mut text = format!("+{} gold for the strike fund", gold);
+                // sponsor crates guarantee affixed merchandise
+                if tier > 0 {
+                    let max_tier = (1 + self.depth / 2 + tier as i32 - 1).max(1);
+                    let pool: Vec<&str> = content
+                        .items
+                        .iter()
+                        .filter(|i| i.tier <= max_tier && i.is_equippable())
+                        .map(|i| i.id.as_str())
+                        .collect();
+                    let n_items = if tier >= 3 { 2 } else { 1 };
+                    for _ in 0..n_items {
+                        if pool.is_empty() {
+                            break;
+                        }
+                        let id = pool[gen_range(0, pool.len() as i32) as usize].to_string();
+                        let mut inst = self.make_loot(content, &id);
+                        if !inst.has_affix() && !content.prefixes.is_empty() {
+                            inst.prefix = Some(
+                                content.prefixes[gen_range(0, content.prefixes.len() as i32) as usize]
+                                    .id
+                                    .clone(),
+                            );
+                        }
+                        if self.player.add_item(&inst) {
+                            text = format!("{}, ✦ {}", text, display_name(content, &inst));
+                        }
+                    }
+                    self.hype += 0.15;
+                    self.add_stat("sponsor_crates", 1, content);
+                    return Interaction::ChestLoot { text: format!("SPONSOR CRATE: {}", text) };
+                }
                 if gen_range(0, 100) < 65 {
                     let max_tier = 1 + self.depth / 2;
                     let pool: Vec<&str> = content

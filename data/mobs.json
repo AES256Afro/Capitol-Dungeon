@@ -276,6 +276,10 @@
         {
           "item": "free_lunch",
           "chance": 0.12
+        },
+        {
+          "item": "dynamite",
+          "chance": 0.1
         }
       ],
       "palette": {
@@ -404,6 +408,10 @@
         {
           "item": "riveted_jeans",
           "chance": 0.07
+        },
+        {
+          "item": "dynamite",
+          "chance": 0.15
         }
       ],
       "palette": {
@@ -529,6 +537,10 @@
         {
           "item": "quilted_jacket",
           "chance": 0.05
+        },
+        {
+          "item": "oil_flask",
+          "chance": 0.15
         }
       ],
       "palette": {
@@ -848,6 +860,10 @@
         {
           "item": "worn_boots",
           "chance": 0.06
+        },
+        {
+          "item": "oil_flask",
+          "chance": 0.2
         }
       ],
       "palette": {
@@ -912,6 +928,10 @@
         {
           "item": "harvest_scythe",
           "chance": 0.04
+        },
+        {
+          "item": "dynamite",
+          "chance": 0.08
         }
       ],
       "palette": {
@@ -980,6 +1000,10 @@
         {
           "item": "community_stew",
           "chance": 0.12
+        },
+        {
+          "item": "dynamite",
+          "chance": 0.1
         }
       ],
       "palette": {

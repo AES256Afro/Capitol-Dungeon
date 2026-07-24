@@ -71,6 +71,9 @@ fn use_or_equip(w: &mut World, content: &Content, idx: usize) {
         w.player.mp = (w.player.mp + def.mana).min(maxmp);
         w.player.remove_item(idx);
         w.toast(format!("Used: {}", def.name));
+    } else if def.is_throwable() {
+        let key = if def.kind == "bomb" { "G" } else { "F" };
+        w.toast(format!("{} is thrown with [{}] during play. Aim away from comrades.", def.name, key));
     }
 }
 
@@ -132,6 +135,7 @@ fn play_events(w: &mut World, sfx: &audio::Sfx) {
             GameEvent::Dash => sfx.dash(),
             GameEvent::Recruit => sfx.recruit(),
             GameEvent::Quest => sfx.recruit(),
+            GameEvent::Boom => sfx.boom(),
         }
     }
 }
@@ -253,9 +257,16 @@ async fn main() {
                 world.update(dt, &content, mv, attack, cast, dodge);
                 play_events(&mut world, &sfx);
 
+                if is_key_pressed(KeyCode::G) {
+                    world.throw_item(&content, "bomb");
+                }
+                if is_key_pressed(KeyCode::F) {
+                    world.throw_item(&content, "oil");
+                }
                 let interact = is_key_pressed(KeyCode::E) || tin.interact;
                 if world.player.hp <= 0 {
                     world.add_stat("deaths", 1, &content);
+                    world.pick_obituary(&content);
                     // the run ends; the movement's memory does not
                     save::write(&save::snapshot(&world, false));
                     screen = Screen::Dead;

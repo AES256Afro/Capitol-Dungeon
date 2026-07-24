@@ -1710,6 +1710,56 @@
         "....b.....",
         ".........."
       ]
+    },
+    {
+      "id": "dynamite",
+      "name": "Solidarity Dynamite",
+      "kind": "bomb",
+      "desc": "Direct action in stick form. Throw with G. Demolishes walls. Does NOT discriminate.",
+      "value": 30,
+      "tier": 2,
+      "palette": {
+        "a": "#c0392b",
+        "b": "#7a1f14",
+        "f": "#ffe066"
+      },
+      "sprite": [
+        "....f.....",
+        "....f.....",
+        "...aaa....",
+        "...aaa....",
+        "...aaa....",
+        "...aba....",
+        "...aaa....",
+        "...aaa....",
+        "...aaa....",
+        ".........."
+      ]
+    },
+    {
+      "id": "oil_flask",
+      "name": "Slick Oil Flask",
+      "kind": "oil",
+      "desc": "Throw with F. Exploiters slip in it. Fire turns it into a statement.",
+      "value": 12,
+      "tier": 1,
+      "palette": {
+        "a": "#5a4632",
+        "b": "#33291c",
+        "g": "#b8c4cc"
+      },
+      "sprite": [
+        "....gg....",
+        "....gg....",
+        "...aaaa...",
+        "..aaaaaa..",
+        "..aabbaa..",
+        "..abbbba..",
+        "..abbbba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
     }
   ]
 }

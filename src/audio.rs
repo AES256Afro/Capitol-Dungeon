@@ -17,6 +17,7 @@ pub struct Sfx {
     ui: Option<Sound>,
     dash: Option<Sound>,
     recruit: Option<Sound>,
+    boom: Option<Sound>,
 }
 
 fn wav_bytes(samples: &[i16]) -> Vec<u8> {
@@ -115,6 +116,7 @@ impl Sfx {
                 sweep(659.0, 659.0, 0.18, 0.45),
             ]))
             .await,
+            boom: load(mix(&[noise(0.45, 0.95), sweep(90.0, 28.0, 0.5, 0.95)])).await,
         }
     }
 
@@ -139,6 +141,7 @@ impl Sfx {
     pub fn ui(&self) { Self::play(&self.ui, 0.4); }
     pub fn dash(&self) { Self::play(&self.dash, 0.5); }
     pub fn recruit(&self) { Self::play(&self.recruit, 0.6); }
+    pub fn boom(&self) { Self::play(&self.boom, 0.9); }
 }
 
 // ---------- procedural lo-fi backing loop ----------
