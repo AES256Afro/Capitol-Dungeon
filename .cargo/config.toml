@@ -1,0 +1,4 @@
+# miniquad/macroquad get their GL + platform functions from JS (gl.js) at
+# runtime; tell the wasm linker to treat those undefined symbols as imports.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "link-arg=--import-undefined"]

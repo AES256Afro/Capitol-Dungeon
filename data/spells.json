@@ -1,0 +1,28 @@
+{
+  "spells": [
+    {
+      "id": "spark_of_rage", "name": "Spark of Rage",
+      "desc": "Hurl righteous fury at the nearest exploiter. 14 damage.",
+      "cost": 6, "damage": 14, "radius": 0.0, "heal": 0,
+      "range": 6.0, "unlock_level": 1, "color": "#ff8830"
+    },
+    {
+      "id": "mutual_aid", "name": "Mutual Aid",
+      "desc": "The community provides. Heal 30 HP.",
+      "cost": 12, "damage": 0, "radius": 0.0, "heal": 30,
+      "range": 0.0, "unlock_level": 2, "color": "#4fdc7f"
+    },
+    {
+      "id": "general_strike", "name": "General Strike",
+      "desc": "Everything stops. 12 damage to ALL enemies within 3 tiles.",
+      "cost": 16, "damage": 12, "radius": 3.0, "heal": 0,
+      "range": 0.0, "unlock_level": 4, "color": "#ffdd33"
+    },
+    {
+      "id": "eat_the_rich", "name": "Eat the Rich",
+      "desc": "Devastating hunger of the many. 40 damage to the nearest enemy, heals you 10.",
+      "cost": 28, "damage": 40, "radius": 0.0, "heal": 10,
+      "range": 5.0, "unlock_level": 7, "color": "#ff3355"
+    }
+  ]
+}

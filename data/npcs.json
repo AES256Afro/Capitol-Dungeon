@@ -1,0 +1,158 @@
+{
+  "npcs": [
+    {
+      "id": "elder", "name": "Elder Rosa",
+      "lines": [
+        "Nobody survives this place alone, friend. Nobody survives ANY place alone.",
+        "The dungeon belongs to everyone who works it. Same as the world upstairs.",
+        "Those skeletons? Middle managers who never logged off. Don't end up like them.",
+        "Freedom isn't a market. It's a promise we keep to each other.",
+        "They call it 'human resources.' We call it 'people.' Words matter down here.",
+        "Rest at the fire. It's free. The best things are."
+      ],
+      "palette": { "a": "#d9b380", "h": "#e8e8e8", "c": "#8a3a5a", "e": "#332222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "medic", "name": "Doc Debs",
+      "lines": [
+        "Healing is free at my table. Imagine that — a world where it always is.",
+        "Medicare for all! Even adventurers. ESPECIALLY adventurers.",
+        "I don't bill. I bandage. There's a difference the surface forgot.",
+        "The trolls upstairs charge 4000 gold for an ambulance ride. Down here? Sit. Rest. Heal.",
+        "Your health is not a subscription service, comrade.",
+        "While there is a lower class, I am in it. While there is a soul in prison, I am not free."
+      ],
+      "palette": { "a": "#c89a6a", "h": "#5c4630", "c": "#e8e8e8", "r": "#cc2233", "e": "#222233" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.ccrrcc.c.",
+        "...crrrrc...",
+        "...ccrrcc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "teacher", "name": "Professor Quill",
+      "lines": [
+        "Free education would've kept half these skeletons from selling their souls for equity.",
+        "I teach anyone who sits down. No tuition. No debt mites at MY door.",
+        "Knowledge hoarded is knowledge rotted. Ask any lich.",
+        "They put paywalls on papers written with public money. Villainy has many forms.",
+        "Every spell I know, I'll teach you for free. That's what a spell IS — shared knowledge.",
+        "Study the boss's patterns. Study ALL bosses' patterns. That's praxis."
+      ],
+      "palette": { "a": "#b88a5a", "h": "#333340", "c": "#3a5a8a", "g": "#ffd24a", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..hgegageh..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "bard", "name": "Bard of the Commons",
+      "lines": [
+        "♪ No more wars for the surface lords, no more blood for gold... ♪",
+        "Every song I write is public domain the second I sing it. Culture is a commons!",
+        "The goblins DMCA'd my last ballad. I wrote three more about them.",
+        "♪ Solidarity forever, the dungeon makes us strong ♪",
+        "Music was never meant to be streamed at $0.003 a play, friend.",
+        "They can't evict a melody."
+      ],
+      "palette": { "a": "#d9a97a", "h": "#8a4a2a", "c": "#4a8a5a", "g": "#c8a468", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.g.",
+        "...cccccc.g.",
+        "...ccccccgg.",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "shopkeep", "name": "Coop the Quartermaster", "shopkeeper": true,
+      "lines": [
+        "Welcome to the co-op! Prices cover costs, not yachts.",
+        "Every purchase funds the free clinic upstairs. Well. Downstairs. Directions are hard here.",
+        "At-cost gear for the people. The troll marks up 900%. I mark up 0%.",
+        "Take what you need, pay what it's worth. Novel concept, I know.",
+        "The workers own this shop. All one of me."
+      ],
+      "palette": { "a": "#caa070", "h": "#3a2a1a", "c": "#a06a2a", "p": "#4a7a4a", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cpcccpcc..",
+        ".c.cppppc.c.",
+        "...cpppcc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "veteran", "name": "Old Marcher Miri",
+      "lines": [
+        "I fought in three surface wars before I realized who they were really for.",
+        "No more wars. Not for oil, not for gold, not for dungeon mineral rights.",
+        "The generals never bled. The shareholders never bled. We bled.",
+        "Down here we settle things at the campfire, with soup.",
+        "Peace isn't weakness. Peace is the hardest thing we ever organized."
+      ],
+      "palette": { "a": "#b8926a", "h": "#9a9aa8", "c": "#5a6a4a", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    }
+  ]
+}

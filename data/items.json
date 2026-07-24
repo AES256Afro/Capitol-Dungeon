@@ -1,0 +1,418 @@
+{
+  "items": [
+    {
+      "id": "bread", "name": "Day-Old Bread", "kind": "potion",
+      "desc": "Baked by the commune. Heals 10 HP.",
+      "heal": 10, "value": 4, "tier": 1,
+      "palette": { "a": "#c9973f", "b": "#8a6428" },
+      "sprite": [
+        "..........",
+        "..........",
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aabaabaa.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "red_potion", "name": "Red Potion", "kind": "potion",
+      "desc": "Community-brewed cure-most. Heals 30 HP.",
+      "heal": 30, "value": 15, "tier": 1,
+      "palette": { "a": "#e03a4e", "b": "#8a1f2c", "g": "#b8c4cc" },
+      "sprite": [
+        "....gg....",
+        "....gg....",
+        "...gggg...",
+        "...aaaa...",
+        "..aaaaaa..",
+        "..aabaaa..",
+        "..aaaaaa..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "big_potion", "name": "People's Elixir", "kind": "potion",
+      "desc": "Made in the free clinic. Heals 60 HP.",
+      "heal": 60, "value": 40, "tier": 2,
+      "palette": { "a": "#ff5a6e", "b": "#a02535", "g": "#d8e4ec" },
+      "sprite": [
+        "....gg....",
+        "...gggg...",
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        ".aabaabaa.",
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "...aaaa...",
+        ".........."
+      ]
+    },
+    {
+      "id": "mana_potion", "name": "Blue Potion", "kind": "potion",
+      "desc": "Distilled midnight-study energy. Restores 25 MP.",
+      "mana": 25, "value": 15, "tier": 1,
+      "palette": { "a": "#3a7ae0", "b": "#1f458a", "g": "#b8c4cc" },
+      "sprite": [
+        "....gg....",
+        "....gg....",
+        "...gggg...",
+        "...aaaa...",
+        "..aaaaaa..",
+        "..aabaaa..",
+        "..aaaaaa..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "free_lunch", "name": "Free Lunch", "kind": "potion",
+      "desc": "There IS such a thing. Heals 25 HP, restores 10 MP.",
+      "heal": 25, "mana": 10, "value": 20, "tier": 1,
+      "palette": { "a": "#e0b03a", "b": "#4fae4f", "c": "#e03a4e" },
+      "sprite": [
+        "..........",
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        ".abbbbbba.",
+        ".acccccca.",
+        ".aaaaaaaa.",
+        "..aaaaaa..",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "rusty_shiv", "name": "Rusty Shiv", "kind": "weapon",
+      "desc": "It's not much, but it's honest work. +2 ATK.",
+      "atk": 2, "value": 10, "tier": 1,
+      "palette": { "a": "#9aa4ac", "b": "#7a5230", "r": "#a0522d" },
+      "sprite": [
+        "......a...",
+        ".....aa...",
+        "....aar...",
+        "...aaa....",
+        "..aaa.....",
+        "..ra......",
+        ".bb.......",
+        "bb........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "picket_sign", "name": "Picket Sign", "kind": "weapon",
+      "desc": "The people's cudgel. +4 ATK.",
+      "atk": 4, "value": 30, "tier": 1,
+      "palette": { "a": "#e8ddc8", "b": "#7a5230", "r": "#cc2233" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".arrarraa.",
+        ".aararaaa.",
+        ".aaaaaaaa.",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        ".........."
+      ]
+    },
+    {
+      "id": "union_hammer", "name": "Union Hammer", "kind": "weapon",
+      "desc": "Collectively bargained steel. +7 ATK.",
+      "atk": 7, "value": 80, "tier": 2,
+      "palette": { "a": "#b8c4cc", "b": "#7a5230", "s": "#5c666e" },
+      "sprite": [
+        "..aaaaaa..",
+        "..aaaaaa..",
+        "..saaaas..",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        "....bb....",
+        ".........."
+      ]
+    },
+    {
+      "id": "solidarity_saber", "name": "Solidarity Saber", "kind": "weapon",
+      "desc": "Forged from a thousand melted golden parachutes. +11 ATK.",
+      "atk": 11, "value": 200, "tier": 3,
+      "palette": { "a": "#ffd24a", "b": "#8a6428", "w": "#fff8e0" },
+      "sprite": [
+        ".......ww.",
+        "......waa.",
+        ".....waa..",
+        "....waa...",
+        "...waa....",
+        "..aaa.....",
+        ".baab.....",
+        "bbb.b.....",
+        ".b........",
+        ".........."
+      ]
+    },
+    {
+      "id": "wooden_buckler", "name": "Wooden Buckler", "kind": "offhand",
+      "desc": "Reclaimed fence wood. +2 DEF.",
+      "def": 2, "value": 25, "tier": 1,
+      "palette": { "a": "#a0783c", "b": "#6e5228", "s": "#8a8a8a" },
+      "sprite": [
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aabaabaa.",
+        ".aabssbaa.",
+        ".aabssbaa.",
+        ".aabaabaa.",
+        "..aaaaaa..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "riot_shield", "name": "Liberated Riot Shield", "kind": "offhand",
+      "desc": "Repurposed for the people. +5 DEF.",
+      "def": 5, "value": 120, "tier": 2,
+      "palette": { "a": "#7ab8d8", "b": "#3a6a88", "r": "#cc2233" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".abbbbbba.",
+        ".abraarba.",
+        ".abaraaba.",
+        ".abaaraba.",
+        ".abraarba.",
+        ".abbbbbba.",
+        "..aaaaaa..",
+        "...aaaa...",
+        ".........."
+      ]
+    },
+    {
+      "id": "hardhat", "name": "Worker's Hardhat", "kind": "head",
+      "desc": "OSHA-approved, dungeon-tested. +1 DEF.",
+      "def": 1, "value": 15, "tier": 1,
+      "palette": { "a": "#f2c230", "b": "#b08a1a" },
+      "sprite": [
+        "..........",
+        "...aaaa...",
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        ".aabaabaa.",
+        "bbbbbbbbbb",
+        "..........",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "thinkers_beret", "name": "Thinker's Beret", "kind": "head",
+      "desc": "Free education looks good on you. +2 DEF, +8 MP.",
+      "def": 2, "mp": 8, "value": 60, "tier": 2,
+      "palette": { "a": "#cc2233", "b": "#8a1520" },
+      "sprite": [
+        "....a.....",
+        "..aaaaaa..",
+        ".aaaaaaaa.",
+        "aaaaaaaaaa",
+        ".babbbbab.",
+        "..........",
+        "..........",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "workers_overalls", "name": "Worker's Overalls", "kind": "chest",
+      "desc": "Deep pockets, deeper principles. +2 DEF.",
+      "def": 2, "value": 25, "tier": 1,
+      "palette": { "a": "#3a6ab8", "b": "#24457a", "s": "#c8a468" },
+      "sprite": [
+        ".a......a.",
+        ".a.aaaa.a.",
+        ".aaaaaaaa.",
+        ".aabaabaa.",
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        ".aaa..aaa.",
+        ".aaa..aaa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "organizer_coat", "name": "Organizer's Coat", "kind": "chest",
+      "desc": "Lined with pamphlets. +3 DEF, +10 MP.",
+      "def": 3, "mp": 10, "value": 90, "tier": 2,
+      "palette": { "a": "#6a4a8a", "b": "#452a60", "g": "#ffd24a" },
+      "sprite": [
+        ".aa....aa.",
+        ".aaaaaaaa.",
+        ".aagaagaa.",
+        ".aaaaaaaa.",
+        ".abaaaaba.",
+        ".abaaaaba.",
+        ".aba..aba.",
+        ".aa....aa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "chainmail", "name": "Co-op Chainmail", "kind": "chest",
+      "desc": "Every link supports the others. +5 DEF.",
+      "def": 5, "value": 140, "tier": 3,
+      "palette": { "a": "#b8c4cc", "b": "#7a848c" },
+      "sprite": [
+        ".a......a.",
+        ".aaaaaaaa.",
+        ".abababaa.",
+        ".ababababa",
+        ".aabababa.",
+        ".abababaa.",
+        ".aab..baa.",
+        ".aa....aa.",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "patched_trousers", "name": "Patched Trousers", "kind": "legs",
+      "desc": "Mended by a neighbor. +1 DEF.",
+      "def": 1, "value": 12, "tier": 1,
+      "palette": { "a": "#8a6d4a", "b": "#5c4630", "p": "#3a6ab8" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        ".aaa..aaa.",
+        ".apa..aaa.",
+        ".aaa..aba.",
+        ".aaa..aaa.",
+        ".baa..aab.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "steel_greaves", "name": "Steel Greaves", "kind": "legs",
+      "desc": "March on. +3 DEF.",
+      "def": 3, "value": 85, "tier": 2,
+      "palette": { "a": "#9aa8b4", "b": "#5c6a76" },
+      "sprite": [
+        ".aaaaaaaa.",
+        ".aaaaaaaa.",
+        ".aab..baa.",
+        ".aab..baa.",
+        ".aab..baa.",
+        ".aab..baa.",
+        ".bbb..bbb.",
+        "..........",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "worn_boots", "name": "Worn Marching Boots", "kind": "boots",
+      "desc": "They've seen some picket lines. +10 SPD.",
+      "spd": 10, "value": 20, "tier": 1,
+      "palette": { "a": "#7a5230", "b": "#4e3018" },
+      "sprite": [
+        "..........",
+        "..........",
+        ".aa...aa..",
+        ".aa...aa..",
+        ".aa...aa..",
+        ".aab..aab.",
+        ".aaab.aaab",
+        ".bbbb.bbbb",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "swift_sneakers", "name": "Mutual-Aid Runners", "kind": "boots",
+      "desc": "For delivering groceries to elders, fast. +20 SPD, +1 DEF.",
+      "spd": 20, "def": 1, "value": 95, "tier": 2,
+      "palette": { "a": "#e84a5a", "b": "#ffffff", "s": "#333333" },
+      "sprite": [
+        "..........",
+        "..........",
+        ".aa...aa..",
+        ".aa...aa..",
+        ".aab..aab.",
+        ".aaab.aaab",
+        ".bbbb.bbbb",
+        ".ssss.ssss",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "copper_ring", "name": "Copper Ring", "kind": "ring",
+      "desc": "Simple and honest. +5 max HP.",
+      "hp": 5, "value": 18, "tier": 1,
+      "palette": { "a": "#c87a3a", "b": "#8a4e20" },
+      "sprite": [
+        "..........",
+        "..........",
+        "...aaaa...",
+        "..ab..ba..",
+        "..a....a..",
+        "..a....a..",
+        "..ab..ba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "comrade_band", "name": "Comrade's Band", "kind": "ring",
+      "desc": "Engraved: 'An injury to one is an injury to all.' +2 ATK, +2 DEF.",
+      "atk": 2, "def": 2, "value": 110, "tier": 2,
+      "palette": { "a": "#ffd24a", "b": "#b08a1a", "r": "#cc2233" },
+      "sprite": [
+        "..........",
+        "....rr....",
+        "...arra...",
+        "..ab..ba..",
+        "..a....a..",
+        "..a....a..",
+        "..ab..ba..",
+        "...aaaa...",
+        "..........",
+        ".........."
+      ]
+    },
+    {
+      "id": "medicare_amulet", "name": "Medicare-For-All Amulet", "kind": "ring",
+      "desc": "Universal coverage. +15 max HP, +1 DEF.",
+      "hp": 15, "def": 1, "value": 160, "tier": 3,
+      "palette": { "a": "#e8e8e8", "b": "#aaaaaa", "r": "#cc2233" },
+      "sprite": [
+        "....aa....",
+        "...a..a...",
+        "..a....a..",
+        "..aaaaaa..",
+        "..aarraa..",
+        "..arrrra..",
+        "..aarraa..",
+        "..aaaaaa..",
+        "..........",
+        ".........."
+      ]
+    }
+  ]
+}
