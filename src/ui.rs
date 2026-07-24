@@ -214,6 +214,13 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
             draw_rectangle(sx, sy - 4.0, ts, 3.0, Color::new(0.1, 0.1, 0.1, 0.8));
             draw_rectangle(sx, sy - 4.0, ts * frac, 3.0, hex("#4fdc7f"));
         }
+        if f.recruited {
+            // little red banner over comrades marching with you
+            let bx = sx + ts * 0.5;
+            let by = sy - 8.0;
+            draw_rectangle(bx - 1.0, by - 6.0, 2.0, 8.0, hex("#c8a468"));
+            draw_rectangle(bx + 1.0, by - 6.0, 6.0, 4.0, hex("#cc2233"));
+        }
     }
 
     // mobs
@@ -422,6 +429,12 @@ pub fn interaction_hint(world: &World, content: &Content) -> Option<String> {
                 return Some(format!("[E] Browse the co-op ({})", def.name));
             }
             return Some(format!("[E] Talk to {}", def.name));
+        }
+    }
+    for f in &world.fighters {
+        if !f.recruited && (f.x - px).powi(2) + (f.y - py).powi(2) < (TILE * 1.6).powi(2) {
+            let def = &content.npcs[f.def_idx];
+            return Some(format!("[E] Ask {} to fight beside you", def.name));
         }
     }
     for c in &world.chests {

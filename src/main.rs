@@ -3,6 +3,7 @@ mod charedit;
 mod content;
 mod dungeon;
 mod editor;
+mod save;
 mod sprites;
 mod touch;
 mod ui;
@@ -116,6 +117,8 @@ fn play_events(w: &mut World, sfx: &audio::Sfx) {
             GameEvent::Cast => sfx.cast(),
             GameEvent::Chest => sfx.chest(),
             GameEvent::Rest => sfx.rest(),
+            GameEvent::Dash => sfx.dash(),
+            GameEvent::Recruit => sfx.recruit(),
         }
     }
 }
@@ -128,10 +131,22 @@ async fn main() {
     let mut textures = ui::build_textures(&content);
     textures.set("player", look.build_texture());
     let sfx = audio::Sfx::load_all().await;
+    let music = audio::build_music().await;
+    let mut music_started = false;
     let mut custom: Option<CustomLevel> = load_custom_level().await;
 
     let mut world = World::new(&content);
     let mut started = false;
+    // resume where we left off: profile always, run if one was saved
+    if let Some(sd) = save::read() {
+        if save::apply(&mut world, &content, &sd) {
+            started = true;
+            world.toast(format!(
+                "Welcome back, comrade. Depth {} remembers you.",
+                world.depth
+            ));
+        }
+    }
     let mut screen = Screen::Menu;
     let mut editor = editor::Editor::new();
     let mut touch_ui = touch::TouchUi::new();
@@ -167,7 +182,12 @@ async fn main() {
                     sfx.ui();
                     screen = Screen::Play;
                 } else if is_key_pressed(KeyCode::N) {
+                    let stats = world.stats.clone();
+                    let unlocked = world.unlocked.clone();
                     world = World::new(&content);
+                    world.stats = stats;
+                    world.unlocked = unlocked;
+                    save::write(&save::snapshot(&world, false));
                     started = true;
                     sfx.ui();
                     screen = Screen::Play;
@@ -187,15 +207,25 @@ async fn main() {
             }
 
             Screen::Play => {
+                if !music_started {
+                    audio::start_music(&music);
+                    music_started = true;
+                }
                 let mv = movement_input() + tin.mv;
                 let attack = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::J) || tin.attack;
                 let cast = cast_input().or(tin.cast);
-                world.update(dt, &content, mv, attack, cast);
+                let dodge = is_key_pressed(KeyCode::LeftShift)
+                    || is_key_pressed(KeyCode::RightShift)
+                    || is_key_pressed(KeyCode::K)
+                    || tin.dash;
+                world.update(dt, &content, mv, attack, cast, dodge);
                 play_events(&mut world, &sfx);
 
                 let interact = is_key_pressed(KeyCode::E) || tin.interact;
                 if world.player.hp <= 0 {
                     world.add_stat("deaths", 1, &content);
+                    // the run ends; the movement's memory does not
+                    save::write(&save::snapshot(&world, false));
                     screen = Screen::Dead;
                 } else if interact {
                     match world.interact(&content) {
@@ -208,9 +238,11 @@ async fn main() {
                         }
                         Interaction::Descend => {
                             world.descend(&content, None);
+                            save::write(&save::snapshot(&world, true));
                         }
                         Interaction::Rested => {
-                            world.toast("You rest by the fire. Fully restored — no copay, no deductible.".to_string());
+                            world.toast("You rest by the fire. Fully restored — no copay, no deductible. (Saved.)".to_string());
+                            save::write(&save::snapshot(&world, true));
                         }
                         Interaction::ChestLoot { text } => {
                             world.toast(format!("Chest: {}", text));
@@ -225,6 +257,7 @@ async fn main() {
                 } else if is_key_pressed(KeyCode::F9) {
                     screen = Screen::Editor;
                 } else if is_key_pressed(KeyCode::Escape) {
+                    save::write(&save::snapshot(&world, true));
                     screen = Screen::Menu;
                 }
 

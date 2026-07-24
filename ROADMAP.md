@@ -21,14 +21,19 @@ The plan from here to v1.0. Checked items are already in the game.
 - [x] ~35 new items (58 total): weapon tiers up to the Guillotine Edge, shields,
       armor sets, rings, street-medic kits, strike coffee, community stew…
 
-## v0.3 — "Persistence & Polish"
+## v0.3 — "Persistence & Polish" (MOSTLY SHIPPED)
 
-- [ ] Save/load runs (native: JSON saves; browser: localStorage via quad-storage)
-- [ ] Persistent meta-progression: achievements, character look, best depth
+- [x] Save/load runs — desktop: JSON files; browser: localStorage via a tiny
+      JS bridge plugin; autosaves at campfires, on descent, and on exit
+- [x] Persistent meta-progression: achievements, stats, and character look
       survive page reloads everywhere
-- [ ] Music: procedural lo-fi backing loops (same synth pipeline as SFX)
+- [x] Music: procedural lo-fi backing loop (same synth pipeline as SFX)
+- [x] Dodge-roll with i-frames (Shift/K or the DASH touch button)
+- [x] Humor pass: Office-style middle management, Python-esque absurdism,
+      propane-grade calm, portal-scientist nihilism, and gremlin schemes —
+      3 new NPCs, 3 new enemies, 13 new banter pairs
 - [ ] Status effects: poison (snakes), slow (slime ads), burn (torch), shield wall
-- [ ] Dash/dodge-roll with i-frames; enemy attack telegraphs
+- [ ] Enemy attack telegraphs
 - [ ] Ranged enemies (Repo Archer, Subpoena Thrower) and enemy projectiles
 - [ ] Minibosses every 2-3 floors with unique mechanics
 - [ ] Gamepad support (macroquad reads gamepads on native; browser Gamepad API)
@@ -36,7 +41,9 @@ The plan from here to v1.0. Checked items are already in the game.
 
 ## v0.4 — "The Commune Grows"
 
-- [ ] Recruitable fighters: rescue a pinned-down comrade and they follow you
+- [x] Recruitable fighters: walk up to a comrade in the wild, ask them to join
+      (E), and they follow you between floors — banner overhead, achievements
+- [ ] Deeper recruits: loyalty, gear-sharing, revival at campfires
 - [ ] Quests from NPCs ("clear the co-op's supply route", "find Fern's seeds",
       "escort the medic to floor 3")
 - [ ] Safe-room building: spend gold to add clinic beds (faster heal), a library
@@ -60,7 +67,8 @@ The plan from here to v1.0. Checked items are already in the game.
 - [ ] Discord Activity: register the hosted web build as an Embedded App;
       identity + invites through the Discord SDK, co-op in voice channels
 - [ ] itch.io + GitHub Pages auto-deploy on push (CI workflow)
-- [ ] PWA manifest + service worker: installable, offline-capable on iPad/Android
+- [x] PWA manifest + service worker: installable, offline-capable on iPad/Android
+      (needs HTTPS hosting, e.g. GitHub Pages, to install)
 - [ ] Native packages: .app / .exe / .AppImage via CI; Steam later if wanted
 
 ## v1.0 — "The General Strike"

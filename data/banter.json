@@ -17,6 +17,18 @@
     { "a": "The coffee's strong tonight.", "b": "Picket-line strength. As the ancestors brewed." },
     { "a": "The bard taught the fighters a marching song.", "b": "I heard. The rats upstairs are terrified of 4/4 time." },
     { "a": "Sold out of boots at the co-op again.", "b": "Good. Means people are going places." },
-    { "a": "One day we'll garden on the surface again.", "b": "One day soon. Keep your seeds ready." }
+    { "a": "One day we'll garden on the surface again.", "b": "One day soon. Keep your seeds ready." },
+    { "a": "Did you schedule the revolution stand-up meeting?", "b": "It's a sit-down. We're not animals." },
+    { "a": "The mummy upstairs called a mandatory fun event.", "b": "Attendance: zero. Morale: never higher." },
+    { "a": "There's a portal leaking in the pantry again.", "b": "Third one this week. LABEL your dimensions." },
+    { "a": "That knight outside still won't admit he's lost.", "b": "He's been winning face-down for an hour." },
+    { "a": "A gremlin tried to sell me my own boots back.", "b": "Classic gremlin. ...You didn't buy them, right?" },
+    { "a": "Fire's burning clean tonight. Nearly propane-grade.", "b": "It's wood, friend. But thank you. High praise." },
+    { "a": "I formed a subcommittee on soup thickness.", "b": "Bold. The turnip caucus will want a say." },
+    { "a": "Science update: the boss remains beatable.", "b": "Peer-reviewed by everyone who's hit him." },
+    { "a": "Someone put googly eyes on the campfire rocks.", "b": "And morale is UP. Motion to keep them. Carried." },
+    { "a": "The wraith scheduled me for a one-on-one.", "b": "Decline it with a counter-meeting. Attendees: nobody." },
+    { "a": "The mud collective ratified a new flag.", "b": "Let me guess. It's mud." },
+    { "a": "Do we have a five-year plan?", "b": "Soup, solidarity, repeat. It scales." }
   ]
 }

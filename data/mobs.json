@@ -383,6 +383,101 @@
         "...ss..ss...",
         "..sss..sss.."
       ]
+    },
+    {
+      "id": "grifter",
+      "name": "Gaslight Gremlin",
+      "hp": 12, "atk": 3, "def": 0, "speed": 66, "xp": 6,
+      "gold_min": 4, "gold_max": 10, "tier": 1,
+      "lines": [
+        "This is barely even a scam! It's an opportunity with extra steps!",
+        "I'm not conning you, I'm INVESTING you!",
+        "The implication is that you hand over the gold.",
+        "I've got a system. The system is lying.",
+        "Rules? I self-identify as an exemption!",
+        "Look, on paper, I'm the victim here. I printed the paper myself.",
+        "It's not a pyramid. It's a wealth triangle. Totally different shape."
+      ],
+      "drops": [ { "item": "tin_ring", "chance": 0.15 }, { "item": "zine", "chance": 0.1 } ],
+      "palette": { "a": "#7fb84a", "b": "#4e7a28", "e": "#ffde59", "s": "#6a5a8a" },
+      "sprite": [
+        "..b......b..",
+        "..ab....ba..",
+        "...aaaaaa...",
+        "...aeaaea...",
+        "...aaaaaa...",
+        "....abba....",
+        "..sssssss...",
+        ".a.sssss.a..",
+        "...sssss....",
+        "....ss......",
+        "...b..b.....",
+        "..bb..bb...."
+      ]
+    },
+    {
+      "id": "mummy",
+      "name": "Middle Manager Mummy",
+      "hp": 28, "atk": 6, "def": 2, "speed": 40, "xp": 15,
+      "gold_min": 6, "gold_max": 14, "tier": 2,
+      "lines": [
+        "I'm not just your boss. I'm your friend. Now perish for the quarterly.",
+        "This is a family! A pyramid-shaped family that eats its young!",
+        "Circle back! Touch base! CRUMBLE TO DUST!",
+        "I carved 'World's Best Boss' onto my own sarcophagus.",
+        "Your performance review is: mauling. Room for growth!",
+        "We're restructuring. You've been restructured into a corpse.",
+        "There's no 'I' in team. There's a ME in mummy though. Several.",
+        "This attack could have been an email. I chose violence for morale."
+      ],
+      "drops": [ { "item": "strike_coffee", "chance": 0.2 }, { "item": "book_of_grievances", "chance": 0.08 } ],
+      "palette": { "a": "#d8cfb8", "b": "#a89f88", "e": "#8a2a2a", "t": "#3a3a52" },
+      "sprite": [
+        "...aaaaaa...",
+        "..abababa...",
+        "..aeaabea...",
+        "..aabbaaa...",
+        "...aatta....",
+        "..aaattaa...",
+        ".a.aatt.aa..",
+        ".a.abababa..",
+        "...aaaaaa...",
+        "...ababab...",
+        "...aa..aa...",
+        "..baa..aab.."
+      ]
+    },
+    {
+      "id": "knight",
+      "name": "The Unyielding Knight",
+      "hp": 60, "atk": 11, "def": 5, "speed": 30, "xp": 40,
+      "gold_min": 12, "gold_max": 30, "tier": 3,
+      "lines": [
+        "A scratch! Barely a dent in the ol' chainmail!",
+        "I've been decapitated before. Walked it off.",
+        "Stand and fight, you pheasant! Peasant! Some manner of bird!",
+        "I declare this corridor MINE by right of standing in it!",
+        "Retreat? Nonsense. I'm advancing in reverse!",
+        "My liege pays me in geese. I fight for goose equity!",
+        "None shall pass without a receipt!",
+        "I once argued with a shrubbery and WON."
+      ],
+      "drops": [ { "item": "commune_tower", "chance": 0.08 }, { "item": "steel_toes", "chance": 0.1 } ],
+      "palette": { "a": "#3a3a44", "b": "#22222a", "e": "#ff4444", "p": "#cc2233", "s": "#6a6a78" },
+      "sprite": [
+        "....pp......",
+        "...aaaa.....",
+        "..aaaaaa....",
+        "..aeaaea....",
+        "..aassaa....",
+        "..aaaaaa....",
+        ".aaaaaaaa.s.",
+        "a.aaaaaa.ss.",
+        "a.aaaaaa.s..",
+        "..aaaaaa....",
+        "..aa..aa....",
+        ".baa..aab..."
+      ]
     }
   ]
 }

@@ -6,6 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <meta name="theme-color" content="#14101c">
     <title>Capitol Dungeon</title>
     <style>
         html, body {
@@ -34,7 +38,37 @@
     <canvas id="glcanvas" tabindex="1"></canvas>
     <script src="mq_js_bundle.js"></script>
     <script>
+        // localStorage bridge for saves (cd_save / cd_load_* wasm imports)
+        miniquad_add_plugin({
+            name: "cd_storage",
+            version: "1",
+            register_plugin: function (io) {
+                function readStr(p, l) {
+                    return new TextDecoder().decode(new Uint8Array(wasm_memory.buffer, p, l));
+                }
+                var pending = null;
+                io.env.cd_save = function (kp, kl, vp, vl) {
+                    try { localStorage.setItem("cd_" + readStr(kp, kl), readStr(vp, vl)); } catch (e) {}
+                };
+                io.env.cd_load_len = function (kp, kl) {
+                    try {
+                        var v = localStorage.getItem("cd_" + readStr(kp, kl));
+                        if (v === null) { pending = null; return 0; }
+                        pending = new TextEncoder().encode(v);
+                        return pending.length;
+                    } catch (e) { pending = null; return 0; }
+                };
+                io.env.cd_load_copy = function (dp, cap) {
+                    if (pending) {
+                        new Uint8Array(wasm_memory.buffer, dp, cap).set(pending.subarray(0, cap));
+                    }
+                };
+            },
+        });
         load("capitol-dungeon.wasm");
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("sw.js").catch(function () {});
+        }
     </script>
 </body>
 </html>

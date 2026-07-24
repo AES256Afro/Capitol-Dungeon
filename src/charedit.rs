@@ -137,21 +137,17 @@ impl PlayerLook {
 }
 
 pub fn save(look: &PlayerLook) {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let _ = std::fs::create_dir_all("data");
-        let _ = std::fs::write(
-            "data/player_look.json",
-            serde_json::to_string_pretty(look).unwrap_or_default(),
-        );
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = look;
+    if let Ok(json) = serde_json::to_string_pretty(look) {
+        crate::save::store_raw("player_look", &json);
     }
 }
 
 pub async fn load() -> PlayerLook {
+    if let Some(s) = crate::save::fetch_raw("player_look") {
+        if let Ok(l) = serde_json::from_str(&s) {
+            return l;
+        }
+    }
     match macroquad::file::load_string("data/player_look.json").await {
         Ok(s) => serde_json::from_str(&s).unwrap_or_default(),
         Err(_) => PlayerLook::default(),

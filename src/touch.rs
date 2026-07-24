@@ -9,6 +9,7 @@ pub struct TouchInput {
     pub attack: bool,
     pub interact: bool,
     pub inventory: bool,
+    pub dash: bool,
     pub cast: Option<usize>,
     /// Raw tap positions (screen px) that didn't hit any control — menus use these.
     pub taps: Vec<Vec2>,
@@ -34,6 +35,7 @@ enum BtnKind {
     Attack,
     Interact,
     Inventory,
+    Dash,
     Spell(usize),
 }
 
@@ -43,6 +45,7 @@ fn buttons(spell_count: usize) -> Vec<Btn> {
     let mut b = vec![
         Btn { x: w - 78.0, y: h - 92.0, r: 50.0, label: "ATK", kind: BtnKind::Attack },
         Btn { x: w - 182.0, y: h - 64.0, r: 36.0, label: "E", kind: BtnKind::Interact },
+        Btn { x: w - 262.0, y: h - 58.0, r: 30.0, label: "DASH", kind: BtnKind::Dash },
         Btn { x: w - 46.0, y: h - 210.0, r: 28.0, label: "INV", kind: BtnKind::Inventory },
     ];
     for i in 0..spell_count.min(4) {
@@ -78,6 +81,7 @@ impl TouchUi {
             attack: false,
             interact: false,
             inventory: false,
+            dash: false,
             cast: None,
             taps: Vec::new(),
         };
@@ -98,6 +102,7 @@ impl TouchUi {
                                 BtnKind::Attack => out.attack = true,
                                 BtnKind::Interact => out.interact = true,
                                 BtnKind::Inventory => out.inventory = true,
+                                BtnKind::Dash => out.dash = true,
                                 BtnKind::Spell(i) => out.cast = Some(i),
                             }
                             hit = true;

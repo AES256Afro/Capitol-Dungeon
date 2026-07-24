@@ -15,6 +15,8 @@
     { "id": "elder_status", "name": "Elder of the Commons", "desc": "Reach character level 10.", "stat": "level", "threshold": 10 },
     { "id": "well_read", "name": "Well Rested, Well Read", "desc": "Rest at 5 campfires.", "stat": "rests", "threshold": 5 },
     { "id": "class_traitor", "name": "Cost of Doing Business", "desc": "Die once. The system is rigged.", "stat": "deaths", "threshold": 1 },
-    { "id": "shopaholic", "name": "Co-op Member", "desc": "Buy 5 items from the co-op.", "stat": "buys", "threshold": 5 }
+    { "id": "shopaholic", "name": "Co-op Member", "desc": "Buy 5 items from the co-op.", "stat": "buys", "threshold": 5 },
+    { "id": "recruiter", "name": "Stronger Together", "desc": "Convince a comrade to fight beside you.", "stat": "recruits", "threshold": 1 },
+    { "id": "untouchable", "name": "Untouchable", "desc": "Dodge 50 times.", "stat": "dodges", "threshold": 50 }
   ]
 }

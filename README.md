@@ -49,6 +49,19 @@ Everything else, the goblins financialized. Go fix that.
   test-play instantly; levels are human-editable JSON text art
 - **Fully data-driven / customizable** — mobs, items, spells, NPCs, dialogue,
   banter, achievements, and graffiti are plain JSON files with in-file pixel art
+- **Dodge-roll with i-frames** — Shift/K or the DASH button; ghost-trail included
+- **Recruitable comrades** — ask a fighter in the wild to join you (E); they
+  follow you between floors under a little red banner
+- **Saves that stick** — autosave at campfires, on descent, and on exit;
+  localStorage in the browser, JSON files on desktop; achievements and your
+  character's look persist across sessions
+- **Procedural lo-fi soundtrack** — an Am-F-C-G chiptune loop composed in code
+  at startup, plus full SFX
+- **Installable on iPad/Android** — PWA manifest + offline service worker; host
+  over HTTPS, "Add to Home Screen", play fullscreen offline
+- **Sitcom-grade satire** — middle-management mummies, unyielding knights in
+  absurd denial, gaslighting gremlins, a propane-calm handyman, a portal-weary
+  cellar scientist, and the Mud Collective's thirty-seven-year-old delegate
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
 
 See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,
@@ -61,7 +74,8 @@ co-op multiplayer, Discord Activities, and more).
 | WASD / arrows | Move |
 | Space / J | Melee attack |
 | 1–4 | Cast spells |
-| E | Interact (talk, shop, chest, graffiti, rest, descend) |
+| Shift / K | Dodge-roll (i-frames) |
+| E | Interact (talk, shop, chest, graffiti, rest, descend, **recruit fighters**) |
 | I | Inventory & paper doll |
 | V | Achievements |
 | C | Character editor (from menu) |

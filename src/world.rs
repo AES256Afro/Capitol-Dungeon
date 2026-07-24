@@ -24,6 +24,8 @@ pub enum GameEvent {
     Cast,
     Chest,
     Rest,
+    Dash,
+    Recruit,
 }
 
 pub struct Player {
@@ -45,6 +47,8 @@ pub struct Player {
     pub attack_cd: f32,
     pub swing: f32,
     pub hurt: f32,
+    pub dodge_t: f32,
+    pub dodge_cd: f32,
     pub inventory: Vec<ItemStack>,
     pub equipment: HashMap<String, String>,
 }
@@ -70,6 +74,8 @@ impl Player {
             attack_cd: 0.0,
             swing: 0.0,
             hurt: 0.0,
+            dodge_t: 0.0,
+            dodge_cd: 0.0,
             inventory: vec![
                 ItemStack { id: "bread".into(), qty: 2 },
                 ItemStack { id: "rusty_shiv".into(), qty: 1 },
@@ -172,6 +178,7 @@ pub struct Fighter {
     pub say_cd: f32,
     pub hurt: f32,
     pub engaged: bool,
+    pub recruited: bool,
 }
 
 pub struct Chest {
@@ -292,6 +299,13 @@ impl World {
     }
 
     pub fn load_level(&mut self, content: &Content, custom: Option<&CustomLevel>) {
+        // recruited comrades descend with you
+        let mut squad: Vec<Fighter> = Vec::new();
+        for f in self.fighters.drain(..) {
+            if f.recruited {
+                squad.push(f);
+            }
+        }
         self.map = custom
             .and_then(|c| dungeon::from_custom(c, content.graffiti.len()))
             .unwrap_or_else(|| dungeon::generate(self.depth, content.graffiti.len()));
@@ -305,6 +319,17 @@ impl World {
         self.particles.clear();
         self.pending_reply = None;
         self.populate(content);
+        for (i, mut f) in squad.into_iter().enumerate() {
+            f.x = self.map.spawn.0 + (i as f32 + 1.0) * 12.0;
+            f.y = self.map.spawn.1 + 10.0;
+            f.say = String::new();
+            f.say_t = 0.0;
+            f.kx = 0.0;
+            f.ky = 0.0;
+            // a breather between floors
+            f.hp = (f.hp + f.maxhp / 4).min(f.maxhp);
+            self.fighters.push(f);
+        }
     }
 
     fn populate(&mut self, content: &Content) {
@@ -401,6 +426,7 @@ impl World {
                     say_cd: gen_range(2.0_f32, 6.0_f32),
                     hurt: 0.0,
                     engaged: false,
+                    recruited: false,
                 });
             }
         }
@@ -505,7 +531,7 @@ impl World {
 
     // ---------- per-frame simulation ----------
 
-    pub fn update(&mut self, real_dt: f32, content: &Content, move_dir: Vec2, attack: bool, cast: Option<usize>) {
+    pub fn update(&mut self, real_dt: f32, content: &Content, move_dir: Vec2, attack: bool, cast: Option<usize>, dodge: bool) {
         // hit-stop: the world runs in slow motion for a few frames after impact
         let dt = if self.slowmo > 0.0 { real_dt * 0.18 } else { real_dt };
         self.slowmo = (self.slowmo - real_dt).max(0.0);
@@ -548,6 +574,35 @@ impl World {
         self.player.attack_cd = (self.player.attack_cd - dt).max(0.0);
         self.player.swing = (self.player.swing - dt).max(0.0);
         self.player.hurt = (self.player.hurt - dt).max(0.0);
+        self.player.dodge_t = (self.player.dodge_t - dt).max(0.0);
+        self.player.dodge_cd = (self.player.dodge_cd - dt).max(0.0);
+
+        // dodge-roll: a burst of speed with invulnerability frames
+        if dodge && self.player.dodge_cd <= 0.0 {
+            self.player.dodge_cd = 0.75;
+            self.player.dodge_t = 0.24;
+            let dir = if move_dir.length_squared() > 0.0 {
+                move_dir.normalize()
+            } else {
+                self.player.facing
+            };
+            self.player.kx += dir.x * 300.0;
+            self.player.ky += dir.y * 300.0;
+            self.events.push(GameEvent::Dash);
+            self.add_stat("dodges", 1, content);
+        }
+        // ghost trail while rolling
+        if self.player.dodge_t > 0.0 {
+            let (x, y) = (self.player.x, self.player.y);
+            self.particles.push(Particle {
+                x,
+                y,
+                vx: 0.0,
+                vy: 0.0,
+                t: 0.25,
+                color: (140, 180, 255),
+            });
+        }
 
         // melee swing: lunge forward, wide arc, crits, knockback
         if attack && self.player.attack_cd <= 0.0 {
@@ -631,6 +686,22 @@ impl World {
                     let dmg = (f.atk + gen_range(0, 3)).max(1);
                     *fighter_attacks.entry(mi).or_insert(0) += dmg;
                 }
+            } else if f.recruited {
+                // no enemies around: fall in behind the player
+                let dx = self.player.x - f.x;
+                let dy = self.player.y - f.y;
+                let d = (dx * dx + dy * dy).sqrt();
+                if d > TILE * 1.8 {
+                    let step = 78.0 * dt;
+                    let sx = f.x + dx / d * step + f.kx * dt;
+                    let sy = f.y + dy / d * step + f.ky * dt;
+                    if self.map.box_free(sx, f.y, hw, hw) {
+                        f.x = sx;
+                    }
+                    if self.map.box_free(f.x, sy, hw, hw) {
+                        f.y = sy;
+                    }
+                }
             } else {
                 // drift while idle
                 f.x += f.kx * dt;
@@ -651,6 +722,7 @@ impl World {
         let px = self.player.x;
         let py = self.player.y;
         let player_safe = self.map.tile_at_px(px, py).safe();
+        let player_dodging = self.player.dodge_t > 0.0;
         let fighter_pos: Vec<(f32, f32)> = self.fighters.iter().map(|f| (f.x, f.y)).collect();
         let mut dmg_to_player = 0;
         let mut hurt_from: Option<(f32, f32)> = None;
@@ -720,6 +792,9 @@ impl World {
                 if dist < 15.0 && m.attack_cd <= 0.0 {
                     m.attack_cd = 0.9;
                     match fighter_idx {
+                        None if player_dodging => {
+                            // i-frames: the swing whiffs right through you
+                        }
                         None => {
                             let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
                             dmg_to_player += dmg;
@@ -1114,6 +1189,34 @@ impl World {
             self.npcs[i].say_t = 4.0;
             self.add_stat("talks", 1, content);
             return Interaction::Dialog { who: def.name.clone(), text: line };
+        }
+
+        // recruit a fighter comrade
+        let mut best_fighter: Option<(usize, f32)> = None;
+        for (i, f) in self.fighters.iter().enumerate() {
+            if f.recruited {
+                continue;
+            }
+            let d2 = (f.x - px).powi(2) + (f.y - py).powi(2);
+            if d2 < (TILE * 1.6).powi(2) && best_fighter.map(|(_, bd)| d2 < bd).unwrap_or(true) {
+                best_fighter = Some((i, d2));
+            }
+        }
+        if let Some((i, _)) = best_fighter {
+            self.fighters[i].recruited = true;
+            let def = &content.npcs[self.fighters[i].def_idx];
+            let name = def.name.clone();
+            let line = if def.lines.is_empty() {
+                "For the commons!".to_string()
+            } else {
+                def.lines[gen_range(0, def.lines.len() as i32) as usize].clone()
+            };
+            self.fighters[i].say = line.clone();
+            self.fighters[i].say_t = 3.5;
+            self.events.push(GameEvent::Recruit);
+            self.add_stat("recruits", 1, content);
+            self.toast(format!("{} joins you. An injury to one is an injury to all.", name));
+            return Interaction::Dialog { who: name, text: line };
         }
 
         // chest

@@ -315,6 +315,108 @@
         "...cc..cc...",
         "..ccc..ccc.."
       ]
+    },
+    {
+      "id": "handyman", "name": "Hank the Handyman",
+      "lines": [
+        "I tell you what: a clean campfire burns true, and this one's a beauty.",
+        "Propane's an honest fuel. Burns clean, keeps its word. Can't say that for the vulture.",
+        "Those goblins raised the rent on a LAWN once. A lawn, for Pete's sake.",
+        "A community's like a fence. Every post matters, and you fix it together.",
+        "That parachutist boy ain't right.",
+        "We don't shout down here. We caulk, we mend, we carry on.",
+        "Charcoal capitalism, that's what that is. Dirty burn, no flavor, somebody else's yard.",
+        "Gear advice? Steel toes. Trust a man who's dropped a water heater.",
+        "The co-op sells at cost. That's just proper, dang it.",
+        "Mowed the safe room moss diagonal today. Small dignities win long wars.",
+        "My old man never said he was proud of me. I say it to every fighter who walks out that door.",
+        "Taxes should fix bridges, not buy the troll a second yacht, I tell you what.",
+        "Measure twice, strike once. Works for shelves and revolutions.",
+        "A yard well-kept and a neighbor well-fed. That's the whole platform."
+      ],
+      "palette": { "a": "#d9a97a", "h": "#8a7a5a", "c": "#7a8a94", "g": "#e8e0d0", "e": "#222222" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..hgegageh..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "scientist", "name": "Cellar Scientist Zeta",
+      "lines": [
+        "Listen — *urp* — infinite dungeons, infinite landlords. This is the timeline where we win one.",
+        "I ran the numbers. Solidarity beats greed in nine universes out of ten. The tenth is just goblins.",
+        "I turned myself into a single-payer healthcare system once. Best twenty minutes of my life.",
+        "The universe is cold chaos, kid. Soup night is how we spite it.",
+        "Science isn't owned. The second they patent it, it stops being science and starts being rent.",
+        "I portal'd to a world with free education once. Everyone was insufferably well-read. Paradise.",
+        "Don't overthink the revolution. Don't underthink it either. Thinking amount: exactly correct.",
+        "Your sword's 'enchantment' is just physics with confidence.",
+        "The vulture thinks he's the smartest thing in the dungeon. I've met smarter mold.",
+        "Somewhere out there is a me who sold out. I keep his portal address to throw eggs through.",
+        "No, I don't have a catchphrase. Catchphrases are merchandising. I'm not merch, kid.",
+        "Eat your greens. Fern grows them with spite and love, the two macronutrients.",
+        "Entropy always wins eventually. Rent-seeking doesn't even place. Do the math.",
+        "I miniaturized a general strike once. It fit in a snow globe. Still worked."
+      ],
+      "palette": { "a": "#c8b8a8", "h": "#9ab8c8", "c": "#e0e0e8", "e": "#334444" },
+      "sprite": [
+        ".h.hhhhhh.h.",
+        ".hhhhhhhhhh.",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..cccccccc..",
+        ".c.cccccc.c.",
+        "...cccccc...",
+        "...cccccc...",
+        "...cc..cc...",
+        "..ccc..ccc.."
+      ]
+    },
+    {
+      "id": "delegate", "name": "Delegate Perry of the Mud Collective",
+      "lines": [
+        "We're an autonomous mud collective. We take turns being executive officer of turnips.",
+        "Nobody voted for the Vulture. A big bird in a big office is not a mandate!",
+        "I lodged a complaint with the Ministry of Silly Rents. Lovely walk. Terrible policy.",
+        "Authority ought to come UP from the mud, not DOWN from a perch!",
+        "'King of the dungeon,' is it? I didn't see a ballot. Did YOU see a ballot?",
+        "A raptor on a throne handing out evictions isn't government. It's taxidermy with paperwork.",
+        "There's a potluck inherent in the system. Tuesdays.",
+        "Our anthem is forty minutes of arguing about scythes, then lunch. Gorgeous piece.",
+        "I'm thirty-seven, you know. Everyone assumes older. It's the mud.",
+        "Help the collective and the collective helps you. The whole constitution fits on a spoon.",
+        "We had a king once. Composted him. Best turnips in years.",
+        "Point of order! Everything improves after soup. Motion carries.",
+        "The biweekly biweekly-meeting scheduling meeting went long. Democracy is a marathon.",
+        "Watery tarts throwing cutlery? Never trusted that hiring process either."
+      ],
+      "palette": { "a": "#c8a070", "h": "#c8b050", "c": "#6e5a3a", "m": "#4e3a24", "e": "#332a22" },
+      "sprite": [
+        "...hhhhhh...",
+        "..hhhhhhhh..",
+        "..haaaaaah..",
+        "..haeaaeah..",
+        "...aaaaaa...",
+        "....aaaa....",
+        "..ccmccccc..",
+        ".c.ccccmc.c.",
+        "...cmcccc...",
+        "...ccccmc...",
+        "...cc..cc...",
+        "..mcc..ccm.."
+      ]
     }
   ]
 }
