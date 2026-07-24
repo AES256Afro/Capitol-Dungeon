@@ -1,28 +1,221 @@
 {
   "prefixes": [
-    { "id": "sturdy", "name": "Sturdy", "value_mult": 1.5, "stats": { "def": 2 } },
-    { "id": "sharp", "name": "Sharp", "value_mult": 1.5, "stats": { "atk": 2 } },
-    { "id": "vicious", "name": "Vicious", "value_mult": 2.0, "stats": { "atk": 4 } },
-    { "id": "reinforced", "name": "Reinforced", "value_mult": 2.0, "stats": { "def": 3 } },
-    { "id": "vital", "name": "Vital", "value_mult": 1.6, "stats": { "hp": 8 } },
-    { "id": "hearty", "name": "Hearty", "value_mult": 2.0, "stats": { "hp": 14 } },
-    { "id": "clever", "name": "Clever", "value_mult": 1.5, "stats": { "mp": 6 } },
-    { "id": "brilliant", "name": "Brilliant", "value_mult": 2.0, "stats": { "mp": 12 } },
-    { "id": "swift", "name": "Swift", "value_mult": 1.6, "stats": { "spd": 6 } },
-    { "id": "nimble", "name": "Nimble", "value_mult": 2.0, "stats": { "spd": 12 } },
-    { "id": "organized", "name": "Organized", "value_mult": 2.2, "stats": { "atk": 2, "def": 2 } },
-    { "id": "tempered", "name": "Tempered", "value_mult": 2.2, "stats": { "def": 2, "hp": 8 } }
+    {
+      "id": "sturdy",
+      "name": "Sturdy",
+      "value_mult": 1.5,
+      "stats": {
+        "def": 2
+      }
+    },
+    {
+      "id": "sharp",
+      "name": "Sharp",
+      "value_mult": 1.5,
+      "stats": {
+        "atk": 2
+      }
+    },
+    {
+      "id": "vicious",
+      "name": "Vicious",
+      "value_mult": 2.0,
+      "stats": {
+        "atk": 4
+      }
+    },
+    {
+      "id": "reinforced",
+      "name": "Reinforced",
+      "value_mult": 2.0,
+      "stats": {
+        "def": 3
+      }
+    },
+    {
+      "id": "vital",
+      "name": "Vital",
+      "value_mult": 1.6,
+      "stats": {
+        "hp": 8
+      }
+    },
+    {
+      "id": "hearty",
+      "name": "Hearty",
+      "value_mult": 2.0,
+      "stats": {
+        "hp": 14
+      }
+    },
+    {
+      "id": "clever",
+      "name": "Clever",
+      "value_mult": 1.5,
+      "stats": {
+        "mp": 6
+      }
+    },
+    {
+      "id": "brilliant",
+      "name": "Brilliant",
+      "value_mult": 2.0,
+      "stats": {
+        "mp": 12
+      }
+    },
+    {
+      "id": "swift",
+      "name": "Swift",
+      "value_mult": 1.6,
+      "stats": {
+        "spd": 6
+      }
+    },
+    {
+      "id": "nimble",
+      "name": "Nimble",
+      "value_mult": 2.0,
+      "stats": {
+        "spd": 12
+      }
+    },
+    {
+      "id": "organized",
+      "name": "Organized",
+      "value_mult": 2.2,
+      "stats": {
+        "atk": 2,
+        "def": 2
+      }
+    },
+    {
+      "id": "tempered",
+      "name": "Tempered",
+      "value_mult": 2.2,
+      "stats": {
+        "def": 2,
+        "hp": 8
+      }
+    }
   ],
   "suffixes": [
-    { "id": "commune", "name": "of the Commune", "value_mult": 1.8, "stats": { "def": 2, "hp": 5 } },
-    { "id": "solidarity", "name": "of Solidarity", "value_mult": 1.8, "stats": { "atk": 2, "def": 2 } },
-    { "id": "long_march", "name": "of the Long March", "value_mult": 1.6, "stats": { "spd": 8 } },
-    { "id": "free_clinic", "name": "of the Free Clinic", "value_mult": 1.7, "stats": { "hp": 10 } },
-    { "id": "night_school", "name": "of Night School", "value_mult": 1.7, "stats": { "mp": 8 } },
-    { "id": "vanguard", "name": "of the Vanguard", "value_mult": 2.0, "stats": { "atk": 3 } },
-    { "id": "mutual_aid", "name": "of Mutual Aid", "value_mult": 1.9, "stats": { "hp": 6, "mp": 4 } },
-    { "id": "picket_line", "name": "of the Picket Line", "value_mult": 1.9, "stats": { "atk": 2, "def": 1 } },
-    { "id": "deep_roots", "name": "of Deep Roots", "value_mult": 2.4, "stats": { "atk": 1, "def": 1, "hp": 5, "mp": 3, "spd": 3 } },
-    { "id": "dawn", "name": "of the Coming Dawn", "value_mult": 2.2, "stats": { "atk": 2, "mp": 6 } }
+    {
+      "id": "commune",
+      "name": "of the Commune",
+      "value_mult": 1.8,
+      "stats": {
+        "def": 2,
+        "hp": 5
+      }
+    },
+    {
+      "id": "solidarity",
+      "name": "of Solidarity",
+      "value_mult": 1.8,
+      "stats": {
+        "atk": 2,
+        "def": 2
+      }
+    },
+    {
+      "id": "long_march",
+      "name": "of the Long March",
+      "value_mult": 1.6,
+      "stats": {
+        "spd": 8
+      }
+    },
+    {
+      "id": "free_clinic",
+      "name": "of the Free Clinic",
+      "value_mult": 1.7,
+      "stats": {
+        "hp": 10
+      }
+    },
+    {
+      "id": "night_school",
+      "name": "of Night School",
+      "value_mult": 1.7,
+      "stats": {
+        "mp": 8
+      }
+    },
+    {
+      "id": "vanguard",
+      "name": "of the Vanguard",
+      "value_mult": 2.0,
+      "stats": {
+        "atk": 3
+      }
+    },
+    {
+      "id": "mutual_aid",
+      "name": "of Mutual Aid",
+      "value_mult": 1.9,
+      "stats": {
+        "hp": 6,
+        "mp": 4
+      }
+    },
+    {
+      "id": "picket_line",
+      "name": "of the Picket Line",
+      "value_mult": 1.9,
+      "stats": {
+        "atk": 2,
+        "def": 1
+      }
+    },
+    {
+      "id": "deep_roots",
+      "name": "of Deep Roots",
+      "value_mult": 2.4,
+      "stats": {
+        "atk": 1,
+        "def": 1,
+        "hp": 5,
+        "mp": 3,
+        "spd": 3
+      }
+    },
+    {
+      "id": "dawn",
+      "name": "of the Coming Dawn",
+      "value_mult": 2.2,
+      "stats": {
+        "atk": 2,
+        "mp": 6
+      }
+    },
+    {
+      "id": "phoenix_picket",
+      "name": "of the Phoenix Picket",
+      "value_mult": 2.6,
+      "stats": {},
+      "special": "lifesteal",
+      "power": 5
+    },
+    {
+      "id": "thorned_fences",
+      "name": "of Thorned Fences",
+      "value_mult": 2.4,
+      "stats": {
+        "def": 1
+      },
+      "special": "thorns",
+      "power": 4
+    },
+    {
+      "id": "echoing_hall",
+      "name": "of the Echoing Hall",
+      "value_mult": 2.6,
+      "stats": {
+        "mp": 4
+      },
+      "special": "echo",
+      "power": 30
+    }
   ]
 }

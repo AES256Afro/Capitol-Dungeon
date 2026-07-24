@@ -18,7 +18,7 @@ enum Screen {
     Menu,
     Play,
     Inventory { sel: usize, doll: bool, doll_sel: usize },
-    Shop { sel: usize, selling: bool },
+    Shop { sel: usize, mode: usize }, // 0 buy · 1 sell · 2 forge
     Dialog { who: String, text: String },
     Achievements,
     Dead,
@@ -236,7 +236,7 @@ async fn main() {
                         }
                         Interaction::Shop => {
                             sfx.ui();
-                            screen = Screen::Shop { sel: 0, selling: false };
+                            screen = Screen::Shop { sel: 0, mode: 0 };
                         }
                         Interaction::Descend => {
                             world.descend(&content, None);
@@ -353,14 +353,14 @@ async fn main() {
                 }
             }
 
-            Screen::Shop { sel, selling } => {
+            Screen::Shop { sel, mode } => {
                 let mut close = is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::E) || tin.interact;
                 let mut do_transact: Option<usize> = None;
                 if is_key_pressed(KeyCode::Tab) {
-                    *selling = !*selling;
+                    *mode = (*mode + 1) % 3;
                     *sel = 0;
                 }
-                let list_len = if *selling {
+                let list_len = if *mode > 0 {
                     world.player.inventory.len()
                 } else {
                     world.shop_stock.len()
@@ -375,7 +375,7 @@ async fn main() {
                     do_transact = Some((*sel).min(list_len - 1));
                 }
                 for t in &tin.taps {
-                    match ui::shop_hit(*t, *selling) {
+                    match ui::shop_hit(*t, *mode) {
                         ui::ShopHit::Row(i) => {
                             if i < list_len {
                                 if *sel == i {
@@ -386,7 +386,7 @@ async fn main() {
                             }
                         }
                         ui::ShopHit::ToggleTab => {
-                            *selling = !*selling;
+                            *mode = (*mode + 1) % 3;
                             *sel = 0;
                         }
                         ui::ShopHit::Outside => close = true,
@@ -394,7 +394,12 @@ async fn main() {
                     }
                 }
                 if let Some(i) = do_transact {
-                    if *selling {
+                    if *mode == 2 {
+                        if world.forge_reroll(&content, i) {
+                            sfx.levelup();
+                            save::write(&save::snapshot(&world, true));
+                        }
+                    } else if *mode == 1 {
                         if let Some(st) = world.player.inventory.get(i) {
                             let inst = st.inst.clone();
                             let price = (world::inst_value(&content, &inst) / 2).max(1) as i64;
@@ -425,9 +430,9 @@ async fn main() {
 
                 clear_background(BLACK);
                 ui::draw_world(&world, &content, &textures);
-                let (s, sl) = (*sel, *selling);
+                let (s, md) = (*sel, *mode);
                 dim();
-                ui::draw_shop(&world, &content, &textures, s, sl);
+                ui::draw_shop(&world, &content, &textures, s, md);
                 touch_ui.draw(0);
                 if close {
                     screen = Screen::Play;

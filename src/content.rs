@@ -17,6 +17,7 @@ pub struct MobDef {
     pub gold_max: i32,
     pub tier: i32,
     pub boss: bool,
+    pub inflicts: String, // "" | poison | slow
     pub lines: Vec<String>,
     pub drops: Vec<DropDef>,
     pub palette: HashMap<String, String>,
@@ -116,6 +117,8 @@ pub struct AffixDef {
     pub name: String,
     pub value_mult: f32,
     pub stats: StatBlock,
+    pub special: String, // "" | lifesteal | thorns | echo
+    pub power: f32,
 }
 
 #[derive(Deserialize, Clone, Default)]

@@ -31,6 +31,7 @@
             display: block;
             image-rendering: pixelated;
             touch-action: none;
+            outline: none;
         }
     </style>
 </head>
@@ -66,6 +67,31 @@
             },
         });
         load("capitol-dungeon.wasm");
+        // miniquad attaches key handlers to the canvas itself, so it MUST be
+        // focused or WASD does nothing — focus it on load and keep it focused.
+        (function () {
+            var c = document.getElementById("glcanvas");
+            function refocus() { if (document.activeElement !== c) c.focus(); }
+            window.addEventListener("load", refocus);
+            window.addEventListener("focus", refocus);
+            document.addEventListener("pointerdown", function () { setTimeout(refocus, 0); });
+            setTimeout(refocus, 100);
+            setTimeout(refocus, 800);
+            // belt and braces: if focus ever escapes the canvas, forward key
+            // events to it so the game never goes deaf.
+            ["keydown", "keyup"].forEach(function (type) {
+                document.addEventListener(type, function (e) {
+                    if (document.activeElement === c || e.cdForwarded) return;
+                    var clone = new KeyboardEvent(type, {
+                        code: e.code, key: e.key, repeat: e.repeat,
+                        ctrlKey: e.ctrlKey, shiftKey: e.shiftKey, altKey: e.altKey,
+                    });
+                    clone.cdForwarded = true;
+                    c.dispatchEvent(clone);
+                    refocus();
+                }, true);
+            });
+        })();
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("sw.js").catch(function () {});
         }

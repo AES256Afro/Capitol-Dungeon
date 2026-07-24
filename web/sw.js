@@ -1,6 +1,6 @@
 // Capitol Dungeon service worker: cache-first so the game runs offline
 // once installed. Bump CACHE on each release to invalidate old assets.
-const CACHE = 'capitol-dungeon-v1784907256';
+const CACHE = 'capitol-dungeon-v1784909549';
 const ASSETS = [
   '.',
   'index.html',

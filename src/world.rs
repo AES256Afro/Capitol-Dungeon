@@ -22,6 +22,10 @@ impl ItemInst {
     pub fn has_affix(&self) -> bool {
         self.prefix.is_some() || self.suffix.is_some()
     }
+    /// 0 = common, 1 = uncommon (one affix), 2 = rare (both affixes)
+    pub fn rarity(&self) -> u8 {
+        self.prefix.is_some() as u8 + self.suffix.is_some() as u8
+    }
 }
 
 /// Full display name, e.g. "Vicious Rusty Shiv of the Commune".
@@ -137,6 +141,9 @@ pub struct Player {
     pub hurt: f32,
     pub dodge_t: f32,
     pub dodge_cd: f32,
+    pub poison_t: f32,
+    pub slow_t: f32,
+    pub poison_tick: f32,
     pub skill_points: i32,
     pub skills: Vec<String>,
     pub inventory: Vec<ItemStack>,
@@ -166,6 +173,9 @@ impl Player {
             hurt: 0.0,
             dodge_t: 0.0,
             dodge_cd: 0.0,
+            poison_t: 0.0,
+            slow_t: 0.0,
+            poison_tick: 0.0,
             skill_points: 0,
             skills: Vec::new(),
             inventory: vec![
@@ -174,6 +184,25 @@ impl Player {
             ],
             equipment: HashMap::new(),
         }
+    }
+
+    /// Sum of special-affix powers (lifesteal/thorns/echo) across equipped gear.
+    pub fn special_sum(&self, c: &Content, key: &str) -> f32 {
+        let mut total = 0.0;
+        for inst in self.equipment.values() {
+            for a in [
+                inst.prefix.as_deref().and_then(|p| c.prefix(p)),
+                inst.suffix.as_deref().and_then(|s| c.suffix(s)),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                if a.special == key {
+                    total += a.power;
+                }
+            }
+        }
+        total
     }
 
     /// Sum of learned-skill bonuses for a given stat key.
@@ -246,6 +275,7 @@ pub struct Mob {
     pub def: i32,
     pub speed: f32,
     pub attack_cd: f32,
+    pub windup: f32,
     pub say: String,
     pub say_t: f32,
     pub say_cd: f32,
@@ -481,6 +511,7 @@ impl World {
                 def: def.def,
                 speed: def.speed,
                 attack_cd: 0.0,
+                windup: 0.0,
                 say: String::new(),
                 say_t: 0.0,
                 say_cd: gen_range(1.0_f32, 5.0_f32),
@@ -670,6 +701,19 @@ impl World {
         self.shake = (self.shake - real_dt * 22.0).max(0.0);
 
         let (atk_total, def_total, maxhp, maxmp, spd) = self.player.totals(content);
+        // slow drags your feet; poison ticks
+        let spd = if self.player.slow_t > 0.0 { spd * 0.6 } else { spd };
+        self.player.slow_t = (self.player.slow_t - dt).max(0.0);
+        self.player.poison_t = (self.player.poison_t - dt).max(0.0);
+        if self.player.poison_t > 0.0 {
+            self.player.poison_tick += dt;
+            if self.player.poison_tick >= 0.8 {
+                self.player.poison_tick = 0.0;
+                self.player.hp -= 2;
+                let (x, y) = (self.player.x, self.player.y);
+                self.fct(x, y - 10.0, "-2".to_string(), false, (140, 220, 90));
+            }
+        }
         self.player.hp = self.player.hp.min(maxhp);
         self.player.mp = self.player.mp.min(maxmp);
 
@@ -770,13 +814,25 @@ impl World {
             }
             let origin = (self.player.x, self.player.y);
             let crit_chance = 12.0 + self.player.skill_sum(content, "crit");
+            let mut kills = 0;
             for i in hits.into_iter().rev() {
                 let crit = gen_range(0.0_f32, 100.0_f32) < crit_chance;
                 let mut dmg = (atk_total - self.mobs[i].def + gen_range(0, 3)).max(1);
                 if crit {
                     dmg *= 2;
                 }
+                let before = self.mobs.len();
                 self.damage_mob(i, dmg, origin, crit, w_kb, content);
+                if self.mobs.len() < before {
+                    kills += 1;
+                }
+            }
+            // Phoenix Picket: kills feed you
+            let lifesteal = self.player.special_sum(content, "lifesteal") as i32 * kills;
+            if lifesteal > 0 {
+                self.player.hp = (self.player.hp + lifesteal).min(maxhp);
+                let (x, y) = (self.player.x, self.player.y);
+                self.fct(x, y - 14.0, format!("+{}", lifesteal), false, (100, 240, 140));
             }
         }
 
@@ -871,8 +927,10 @@ impl World {
         let mut dmg_to_player = 0;
         let mut hurt_from: Option<(f32, f32)> = None;
         let mut fighter_dmg: HashMap<usize, i32> = HashMap::new();
+        let mut attackers: Vec<usize> = Vec::new();
+        let mut inflicted: Option<String> = None;
 
-        for m in &mut self.mobs {
+        for (mi, m) in self.mobs.iter_mut().enumerate() {
             let def = &content.mobs[m.def_idx];
             m.attack_cd = (m.attack_cd - dt).max(0.0);
             m.hurt = (m.hurt - dt).max(0.0);
@@ -937,7 +995,8 @@ impl World {
                 let dist = dist2.sqrt().max(0.001);
                 let dx = tx - m.x;
                 let dy = ty - m.y;
-                if dist > 12.0 {
+                // no creeping while winding up: they plant their feet to strike
+                if dist > 12.0 && m.windup <= 0.0 {
                     let step = m.speed * dt;
                     let sx = m.x + dx / dist * step;
                     let sy = m.y + dy / dist * step;
@@ -949,23 +1008,38 @@ impl World {
                         m.y = sy;
                     }
                 }
-                if dist < 15.0 && m.attack_cd <= 0.0 {
-                    m.attack_cd = 0.9;
-                    match fighter_idx {
-                        None if player_dodging => {
-                            // i-frames: the swing whiffs right through you
-                        }
-                        None => {
-                            let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
-                            dmg_to_player += dmg;
-                            hurt_from = Some((m.x, m.y));
-                        }
-                        Some(fi) => {
-                            let dmg = (m.atk + gen_range(0, 2)).max(1);
-                            *fighter_dmg.entry(fi).or_insert(0) += dmg;
+                // telegraphed attacks: a visible wind-up, then the strike lands
+                // only if the target is still in reach — dodge through it!
+                if m.windup > 0.0 {
+                    m.windup -= dt;
+                    if m.windup <= 0.0 {
+                        m.attack_cd = 0.9;
+                        if dist < 19.0 {
+                            match fighter_idx {
+                                None if player_dodging => {
+                                    // i-frames: the swing whiffs right through you
+                                }
+                                None => {
+                                    let dmg = (m.atk - def_total / 2 + gen_range(0, 2)).max(1);
+                                    dmg_to_player += dmg;
+                                    hurt_from = Some((m.x, m.y));
+                                    attackers.push(mi);
+                                    if !def.inflicts.is_empty() {
+                                        inflicted = Some(def.inflicts.clone());
+                                    }
+                                }
+                                Some(fi) => {
+                                    let dmg = (m.atk + gen_range(0, 2)).max(1);
+                                    *fighter_dmg.entry(fi).or_insert(0) += dmg;
+                                }
+                            }
                         }
                     }
+                } else if dist < 15.0 && m.attack_cd <= 0.0 {
+                    m.windup = 0.35;
                 }
+            } else {
+                m.windup = 0.0;
             }
         }
 
@@ -983,6 +1057,38 @@ impl World {
             let (x, y) = (self.player.x, self.player.y);
             self.spawn_particles(x, y, 5, (255, 90, 90));
             self.fct(x, y - 10.0, format!("-{}", dmg_to_player), false, (255, 80, 80));
+
+            // venoms and bureaucratic drag
+            if let Some(status) = inflicted.take() {
+                match status.as_str() {
+                    "poison" => {
+                        if self.player.poison_t <= 0.0 {
+                            self.toast("Poisoned! The venom of predatory lending courses through you.".to_string());
+                        }
+                        self.player.poison_t = 3.0;
+                    }
+                    "slow" => {
+                        if self.player.slow_t <= 0.0 {
+                            self.toast("Slowed! Wading through terms and conditions.".to_string());
+                        }
+                        self.player.slow_t = 2.5;
+                    }
+                    _ => {}
+                }
+            }
+
+            // Thorned Fences: attackers regret it
+            let thorns = self.player.special_sum(content, "thorns") as i32;
+            if thorns > 0 {
+                let origin = (self.player.x, self.player.y);
+                attackers.sort_by(|a, b| b.cmp(a));
+                attackers.dedup();
+                for mi in attackers {
+                    if mi < self.mobs.len() {
+                        self.damage_mob(mi, thorns, origin, false, 0.5, content);
+                    }
+                }
+            }
         }
 
         // wounded comrades
@@ -1335,6 +1441,14 @@ impl World {
             self.bursts.push(Burst { x: px, y: py, radius: 16.0, t: 0.4, color: "#4fdc7f".to_string() });
             self.fct(px, py - 12.0, format!("+{}", spell.heal), false, (100, 240, 140));
         }
+
+        // Echoing Hall: sometimes the spell pays for itself
+        let echo = self.player.special_sum(content, "echo");
+        if echo > 0.0 && gen_range(0.0_f32, 100.0_f32) < echo {
+            let (_, _, _, maxmp, _) = self.player.totals(content);
+            self.player.mp = (self.player.mp + spell.cost).min(maxmp);
+            self.fct(px, py - 18.0, "Echo!".to_string(), false, (150, 200, 255));
+        }
     }
 
     /// Roll random affixes for found loot; odds creep up with depth.
@@ -1362,6 +1476,45 @@ impl World {
         }
         let (prefix, suffix) = self.roll_affixes(content);
         ItemInst { id: id.to_string(), prefix, suffix }
+    }
+
+    /// The forge: melt down one piece of gear and reroll its affixes.
+    /// Costs gold, guarantees a prefix, good odds on a suffix.
+    pub fn forge_reroll(&mut self, content: &Content, idx: usize) -> bool {
+        let Some(stack) = self.player.inventory.get(idx) else { return false };
+        let inst = stack.inst.clone();
+        let Some(def) = content.item(&inst.id).cloned() else { return false };
+        if !def.is_equippable() {
+            self.toast("The forge only reworks gear, not lunch.".to_string());
+            return false;
+        }
+        let cost = (25 + def.tier * 25) as i64;
+        if self.player.gold < cost {
+            self.toast(format!("The forge needs {} gold for that.", cost));
+            return false;
+        }
+        if content.prefixes.is_empty() {
+            return false;
+        }
+        self.player.gold -= cost;
+        let prefix = Some(
+            content.prefixes[gen_range(0, content.prefixes.len() as i32) as usize].id.clone(),
+        );
+        let suffix = if !content.suffixes.is_empty() && gen_range(0, 100) < 40 {
+            Some(content.suffixes[gen_range(0, content.suffixes.len() as i32) as usize].id.clone())
+        } else {
+            None
+        };
+        let new_inst = ItemInst { id: inst.id.clone(), prefix, suffix };
+        self.player.remove_item(idx);
+        if !self.player.add_item(&new_inst) {
+            self.player.gold += cost;
+            return false;
+        }
+        self.events.push(GameEvent::Chest);
+        let name = display_name(content, &new_inst);
+        self.toast(format!("Reforged: ✦ {} (-{} gold)", name, cost));
+        true
     }
 
     pub fn learn_skill(&mut self, content: &Content, id: &str) -> bool {

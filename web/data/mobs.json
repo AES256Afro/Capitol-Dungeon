@@ -168,7 +168,8 @@
         ".baaaab.....",
         ".baaab......",
         "............"
-      ]
+      ],
+      "inflicts": "poison"
     },
     {
       "id": "skeleton",
@@ -549,7 +550,8 @@
         ".ab.aab.ba..",
         "............",
         "............"
-      ]
+      ],
+      "inflicts": "slow"
     },
     {
       "id": "wraith",
@@ -611,7 +613,8 @@
         "..a.aaaa.a..",
         "...a.aa.a...",
         "....a..a...."
-      ]
+      ],
+      "inflicts": "slow"
     },
     {
       "id": "leech",
@@ -673,7 +676,8 @@
         ".....aaaab..",
         "......bbb...",
         "............"
-      ]
+      ],
+      "inflicts": "poison"
     },
     {
       "id": "pinkerton",

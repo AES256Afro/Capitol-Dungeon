@@ -77,6 +77,16 @@ Everything else, the goblins financialized. Go fix that.
   Nimble…) and suffixes (of the Commune, of the Long March, of Deep Roots…)
   with stat bonuses and boosted sell value; affixed loot glints on the
   ground and shows gold in your pack (`data/affixes.json`)
+- **Rarity tiers** — white / green (one affix) / gold (two affixes) names,
+  dots, and ground glints
+- **Special affixes** — *of the Phoenix Picket* (heal on kill), *of Thorned
+  Fences* (reflect damage), *of the Echoing Hall* (chance of free spells)
+- **The People's Forge** — third tab in the co-op: pay gold to reroll a
+  piece of gear's affixes (prefix guaranteed)
+- **Enemy telegraphs** — attackers plant their feet and flash a "!" before
+  striking; dodge through the wind-up with your i-frames
+- **Status effects** — Payday Pythons and Lobbyist Leeches poison you,
+  Ad Slimes and HR Wraiths slow you; badges show on the HUD
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
 
 See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,

@@ -179,7 +179,9 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
         draw_sprite(tex, &format!("item:{}", d.item.id), sx, sy, ts * 0.6);
         if d.item.has_affix() {
             let tw = ((d.t * 6.0).sin() * 0.5 + 0.5).max(0.2);
-            draw_circle(sx + ts * 0.55, sy - 2.0, s * 1.2, Color::new(1.0, 0.85, 0.3, tw));
+            let mut c = rarity_color(d.item.rarity());
+            c.a = tw;
+            draw_circle(sx + ts * 0.55, sy - 2.0, s * 1.2, c);
         }
     }
 
@@ -256,6 +258,18 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
             let frac = (m.hp as f32 / m.maxhp as f32).clamp(0.0, 1.0);
             draw_rectangle(sx, sy - 4.0, size, 3.0, Color::new(0.1, 0.1, 0.1, 0.8));
             draw_rectangle(sx, sy - 4.0, size * frac, 3.0, hex("#e04444"));
+        }
+        // attack telegraph: a flashing "!" during wind-up — that's your dodge window
+        if m.windup > 0.0 {
+            let flash = ((get_time() * 20.0).sin() * 0.5 + 0.5) as f32;
+            let grow = 1.0 + (0.35 - m.windup) * 1.2;
+            draw_text(
+                "!",
+                sx + size / 2.0 - 3.0 * s,
+                sy - 8.0,
+                16.0 * grow,
+                Color::new(1.0, 0.25 + flash * 0.4, 0.2, 0.85),
+            );
         }
     }
 
@@ -495,6 +509,17 @@ pub fn draw_hud(world: &World, content: &Content) {
         16.0,
         hex("#ffd24a"),
     );
+    // status effect badges
+    let mut bx = 246.0;
+    if p.poison_t > 0.0 {
+        draw_rectangle(bx, 12.0, 52.0, 18.0, Color::new(0.1, 0.3, 0.1, 0.85));
+        draw_text("PSN", bx + 6.0, 26.0, 15.0, hex("#8ce08c"));
+        bx += 58.0;
+    }
+    if p.slow_t > 0.0 {
+        draw_rectangle(bx, 12.0, 52.0, 18.0, Color::new(0.1, 0.15, 0.3, 0.85));
+        draw_text("SLW", bx + 6.0, 26.0, 15.0, hex("#8cb4e0"));
+    }
 
     // spells bar
     let known: Vec<&crate::content::SpellDef> = content
@@ -679,8 +704,7 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
                 );
             }
             let name = crate::world::display_name(content, inst);
-            let col = if inst.has_affix() { hex("#ffd24a") } else { WHITE };
-            draw_text(&name, dx + 34.0, sy + 30.0, 13.0, col);
+            draw_text(&name, dx + 34.0, sy + 30.0, 13.0, rarity_color(inst.rarity()));
         } else {
             draw_text("—", dx + 34.0, sy + 30.0, 15.0, DARKGRAY);
         }
@@ -722,7 +746,7 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
                 );
             }
             if st.inst.has_affix() {
-                draw_circle(cx + 8.0, cy + 8.0, 3.0, hex("#ffd24a"));
+                draw_circle(cx + 8.0, cy + 8.0, 3.0, rarity_color(st.inst.rarity()));
             }
             if st.qty > 1 {
                 draw_text(&format!("{}", st.qty), cx + cell - 16.0, cy + cell - 6.0, 15.0, WHITE);
@@ -758,7 +782,7 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
                 .iter()
                 .enumerate()
             {
-                let col = if inst.has_affix() && i == 0 { hex("#ffd24a") } else { WHITE };
+                let col = if i == 0 { rarity_color(inst.rarity()) } else { WHITE };
                 draw_text(l, gx, detail_y + i as f32 * 18.0, 16.0, col);
             }
         }
@@ -767,27 +791,26 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
     }
 }
 
-pub fn draw_shop(world: &World, content: &Content, tex: &Textures, sel: usize, selling: bool) {
+pub fn draw_shop(world: &World, content: &Content, tex: &Textures, sel: usize, mode: usize) {
     let w = 640.0_f32.min(screen_width() - 40.0);
     let h = 430.0_f32.min(screen_height() - 40.0);
     let x = (screen_width() - w) / 2.0;
     let y = (screen_height() - h) / 2.0;
-    let title = if selling {
-        "The Co-op — SELLING   [Tab] buy  [Enter] sell  [Esc] leave"
-    } else {
-        "The Co-op — BUYING   [Tab] sell  [Enter] buy  [Esc] leave"
+    let title = match mode {
+        1 => "The Co-op — SELLING   [Tab] forge  [Enter] sell  [Esc] leave",
+        2 => "The People's FORGE   [Tab] buy  [Enter] reroll affixes  [Esc] leave",
+        _ => "The Co-op — BUYING   [Tab] sell  [Enter] buy  [Esc] leave",
     };
     panel(x, y, w, h, title);
-    draw_text(
-        &format!("Your gold: {}   (all proceeds fund the free clinic)", world.player.gold),
-        x + 12.0,
-        y + 50.0,
-        16.0,
-        hex("#ffd24a"),
-    );
+    let subtitle = if mode == 2 {
+        format!("Your gold: {}   (reroll: 50g tier-1 gear, +25g per tier — prefix guaranteed)", world.player.gold)
+    } else {
+        format!("Your gold: {}   (all proceeds fund the free clinic)", world.player.gold)
+    };
+    draw_text(&subtitle, x + 12.0, y + 50.0, 15.0, hex("#ffd24a"));
 
     let list_y = y + 70.0;
-    if !selling {
+    if mode == 0 {
         for (i, id) in world.shop_stock.iter().enumerate() {
             let Some(d) = content.item(id) else { continue };
             let ry = list_y + i as f32 * 48.0;
@@ -824,13 +847,31 @@ pub fn draw_shop(world: &World, content: &Content, tex: &Textures, sel: usize, s
                 draw_texture_ex(t, rx + 4.0, ry + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(26.0, 26.0)), ..Default::default() });
             }
             let name = crate::world::display_name(content, &st.inst);
-            let ncol = if st.inst.has_affix() { hex("#ffd24a") } else { WHITE };
-            draw_text(&format!("{} x{}", name, st.qty), rx + 36.0, ry + 15.0, 13.0, ncol);
-            let price = (crate::world::inst_value(content, &st.inst) / 2).max(1);
-            draw_text(&format!("sells {} g", price), rx + 36.0, ry + 30.0, 13.0, hex("#ffd24a"));
+            let ncol = rarity_color(st.inst.rarity());
+            let is_gear = content.item(&st.inst.id).map(|d| d.is_equippable()).unwrap_or(false);
+            let dim_gear = mode == 2 && !is_gear;
+            draw_text(
+                &format!("{} x{}", name, st.qty),
+                rx + 36.0,
+                ry + 15.0,
+                13.0,
+                if dim_gear { DARKGRAY } else { ncol },
+            );
+            let label = if mode == 2 {
+                if is_gear {
+                    let tier = content.item(&st.inst.id).map(|d| d.tier).unwrap_or(1);
+                    format!("reroll {} g", 25 + tier * 25)
+                } else {
+                    "not gear".to_string()
+                }
+            } else {
+                format!("sells {} g", (crate::world::inst_value(content, &st.inst) / 2).max(1))
+            };
+            draw_text(&label, rx + 36.0, ry + 30.0, 13.0, if dim_gear { DARKGRAY } else { hex("#ffd24a") });
         }
         if world.player.inventory.is_empty() {
-            draw_text("Nothing to sell. Keep what you need!", x + 20.0, list_y + 20.0, 16.0, GRAY);
+            let msg = if mode == 2 { "No gear to reforge yet." } else { "Nothing to sell. Keep what you need!" };
+            draw_text(msg, x + 20.0, list_y + 20.0, 16.0, GRAY);
         }
     }
 }
@@ -911,6 +952,14 @@ pub fn draw_menu(has_custom: bool) {
     for (i, l) in controls.iter().enumerate() {
         let ld = measure_text(l, None, 17, 1.0);
         draw_text(l, cx - ld.width / 2.0, 380.0 + i as f32 * 24.0, 17.0, hex("#8a7f9d"));
+    }
+}
+
+pub fn rarity_color(r: u8) -> Color {
+    match r {
+        0 => WHITE,
+        1 => hex("#7fd47f"),
+        _ => hex("#ffd24a"),
     }
 }
 
@@ -1106,7 +1155,7 @@ pub enum ShopHit {
     Outside,
 }
 
-pub fn shop_hit(pos: Vec2, selling: bool) -> ShopHit {
+pub fn shop_hit(pos: Vec2, mode: usize) -> ShopHit {
     let w = 640.0_f32.min(screen_width() - 40.0);
     let h = 430.0_f32.min(screen_height() - 40.0);
     let x = (screen_width() - w) / 2.0;
@@ -1118,7 +1167,7 @@ pub fn shop_hit(pos: Vec2, selling: bool) -> ShopHit {
         return ShopHit::ToggleTab;
     }
     let list_y = y + 70.0;
-    if !selling {
+    if mode == 0 {
         for i in 0..8 {
             let ry = list_y + i as f32 * 48.0;
             if pos.x >= x + 12.0 && pos.x <= x + w - 12.0 && pos.y >= ry && pos.y <= ry + 42.0 {
