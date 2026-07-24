@@ -7,9 +7,97 @@ use std::collections::{HashMap, HashSet, VecDeque};
 pub const EQUIP_SLOTS: [&str; 7] = ["weapon", "offhand", "head", "chest", "legs", "boots", "ring"];
 pub const INV_CAP: usize = 24;
 
+/// A concrete item: base definition plus optional rolled affixes.
+#[derive(Clone, PartialEq, Eq)]
+pub struct ItemInst {
+    pub id: String,
+    pub prefix: Option<String>,
+    pub suffix: Option<String>,
+}
+
+impl ItemInst {
+    pub fn plain(id: &str) -> Self {
+        ItemInst { id: id.to_string(), prefix: None, suffix: None }
+    }
+    pub fn has_affix(&self) -> bool {
+        self.prefix.is_some() || self.suffix.is_some()
+    }
+}
+
+/// Full display name, e.g. "Vicious Rusty Shiv of the Commune".
+pub fn display_name(c: &Content, inst: &ItemInst) -> String {
+    let base = c.item(&inst.id).map(|d| d.name.clone()).unwrap_or_else(|| inst.id.clone());
+    let mut name = String::new();
+    if let Some(p) = inst.prefix.as_deref().and_then(|p| c.prefix(p)) {
+        name.push_str(&p.name);
+        name.push(' ');
+    }
+    name.push_str(&base);
+    if let Some(s) = inst.suffix.as_deref().and_then(|s| c.suffix(s)) {
+        name.push(' ');
+        name.push_str(&s.name);
+    }
+    name
+}
+
+/// (atk, def, hp, mp, spd) including affix bonuses.
+pub fn inst_bonus(c: &Content, inst: &ItemInst) -> (i32, i32, i32, i32, i32) {
+    let mut atk = 0;
+    let mut def = 0;
+    let mut hp = 0;
+    let mut mp = 0;
+    let mut spd = 0;
+    if let Some(d) = c.item(&inst.id) {
+        atk += d.atk;
+        def += d.def;
+        hp += d.hp;
+        mp += d.mp;
+        spd += d.spd;
+    }
+    for a in [
+        inst.prefix.as_deref().and_then(|p| c.prefix(p)),
+        inst.suffix.as_deref().and_then(|s| c.suffix(s)),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        atk += a.stats.atk;
+        def += a.stats.def;
+        hp += a.stats.hp;
+        mp += a.stats.mp;
+        spd += a.stats.spd;
+    }
+    (atk, def, hp, mp, spd)
+}
+
+/// Gold value including affix multipliers.
+pub fn inst_value(c: &Content, inst: &ItemInst) -> i32 {
+    let base = c.item(&inst.id).map(|d| d.value).unwrap_or(0) as f32;
+    let mut mult = 1.0;
+    if let Some(p) = inst.prefix.as_deref().and_then(|p| c.prefix(p)) {
+        mult *= p.value_mult.max(1.0);
+    }
+    if let Some(s) = inst.suffix.as_deref().and_then(|s| c.suffix(s)) {
+        mult *= s.value_mult.max(1.0);
+    }
+    (base * mult) as i32
+}
+
+/// Weapon class handling profile: (attack cooldown, reach px, hit radius px, knockback mult).
+pub fn weapon_profile(wclass: &str) -> (f32, f32, f32, f32) {
+    match wclass {
+        "dagger" => (0.22, 12.0, 14.0, 0.7),
+        "hammer" => (0.55, 14.0, 18.0, 1.9),
+        "spear" => (0.38, 22.0, 13.0, 1.0),
+        "scythe" => (0.45, 11.0, 24.0, 1.2),
+        "sword" => (0.32, 14.0, 17.0, 1.0),
+        _ => (0.30, 12.0, 15.0, 0.8), // bare fists
+    }
+}
+
 #[derive(Clone)]
 pub struct ItemStack {
-    pub id: String,
+    pub inst: ItemInst,
     pub qty: i32,
 }
 
@@ -52,7 +140,7 @@ pub struct Player {
     pub skill_points: i32,
     pub skills: Vec<String>,
     pub inventory: Vec<ItemStack>,
-    pub equipment: HashMap<String, String>,
+    pub equipment: HashMap<String, ItemInst>,
 }
 
 impl Player {
@@ -81,8 +169,8 @@ impl Player {
             skill_points: 0,
             skills: Vec::new(),
             inventory: vec![
-                ItemStack { id: "bread".into(), qty: 2 },
-                ItemStack { id: "rusty_shiv".into(), qty: 1 },
+                ItemStack { inst: ItemInst::plain("bread"), qty: 2 },
+                ItemStack { inst: ItemInst::plain("rusty_shiv"), qty: 1 },
             ],
             equipment: HashMap::new(),
         }
@@ -104,14 +192,13 @@ impl Player {
         let mut hp = self.base_maxhp;
         let mut mp = self.base_maxmp;
         let mut spd = self.base_spd;
-        for id in self.equipment.values() {
-            if let Some(it) = c.item(id) {
-                atk += it.atk;
-                def += it.def;
-                hp += it.hp;
-                mp += it.mp;
-                spd += it.spd as f32;
-            }
+        for inst in self.equipment.values() {
+            let (a, d, h, m, s) = inst_bonus(c, inst);
+            atk += a;
+            def += d;
+            hp += h;
+            mp += m;
+            spd += s as f32;
         }
         atk += self.skill_sum(c, "atk") as i32;
         def += self.skill_sum(c, "def") as i32;
@@ -125,15 +212,15 @@ impl Player {
         (24.0 * (self.level as f64).powf(1.5)) as i64
     }
 
-    pub fn add_item(&mut self, id: &str) -> bool {
-        if let Some(st) = self.inventory.iter_mut().find(|s| s.id == id) {
+    pub fn add_item(&mut self, inst: &ItemInst) -> bool {
+        if let Some(st) = self.inventory.iter_mut().find(|s| s.inst == *inst) {
             st.qty += 1;
             return true;
         }
         if self.inventory.len() >= INV_CAP {
             return false;
         }
-        self.inventory.push(ItemStack { id: id.to_string(), qty: 1 });
+        self.inventory.push(ItemStack { inst: inst.clone(), qty: 1 });
         true
     }
 
@@ -206,7 +293,7 @@ pub struct Chest {
 }
 
 pub struct Drop {
-    pub item: String,
+    pub item: ItemInst,
     pub x: f32,
     pub y: f32,
     pub t: f32,
@@ -650,9 +737,17 @@ impl World {
             });
         }
 
-        // melee swing: lunge forward, wide arc, crits, knockback
+        // melee swing: weapon class sets speed, reach, arc width, and knockback
+        let wclass = self
+            .player
+            .equipment
+            .get("weapon")
+            .and_then(|i| content.item(&i.id))
+            .map(|d| d.wclass.clone())
+            .unwrap_or_default();
+        let (w_cd, w_reach, w_radius, w_kb) = weapon_profile(&wclass);
         if attack && self.player.attack_cd <= 0.0 {
-            self.player.attack_cd = 0.32;
+            self.player.attack_cd = w_cd;
             self.player.swing = 0.18;
             self.events.push(GameEvent::Swing);
             // small lunge into the swing gives it body
@@ -662,14 +757,14 @@ impl World {
                 self.player.x = lx;
                 self.player.y = ly;
             }
-            let reach = self.player.facing * 14.0;
+            let reach = self.player.facing * w_reach;
             let px = self.player.x + reach.x;
             let py = self.player.y + reach.y;
             let mut hits: Vec<usize> = Vec::new();
             for (i, m) in self.mobs.iter().enumerate() {
                 let dx = m.x - px;
                 let dy = m.y - py;
-                if dx * dx + dy * dy < 17.0 * 17.0 {
+                if dx * dx + dy * dy < w_radius * w_radius {
                     hits.push(i);
                 }
             }
@@ -681,7 +776,7 @@ impl World {
                 if crit {
                     dmg *= 2;
                 }
-                self.damage_mob(i, dmg, origin, crit, content);
+                self.damage_mob(i, dmg, origin, crit, w_kb, content);
             }
         }
 
@@ -763,7 +858,7 @@ impl World {
         for (mi, dmg) in fa {
             if mi < self.mobs.len() {
                 let origin = (self.mobs[mi].x + gen_range(-8.0_f32, 8.0_f32), self.mobs[mi].y + 8.0);
-                self.damage_mob(mi, dmg, origin, false, content);
+                self.damage_mob(mi, dmg, origin, false, 1.0, content);
             }
         }
 
@@ -927,11 +1022,15 @@ impl World {
             }
         }
         for i in picked.into_iter().rev() {
-            let id = self.drops[i].item.clone();
-            if self.player.add_item(&id) {
-                let name = content.item(&id).map(|d| d.name.clone()).unwrap_or(id.clone());
+            let inst = self.drops[i].item.clone();
+            if self.player.add_item(&inst) {
+                let name = display_name(content, &inst);
                 self.events.push(GameEvent::Pickup);
-                self.toast(format!("Picked up: {}", name));
+                if inst.has_affix() {
+                    self.toast(format!("Picked up: ✦ {}", name));
+                } else {
+                    self.toast(format!("Picked up: {}", name));
+                }
                 self.drops.remove(i);
             }
         }
@@ -1102,7 +1201,7 @@ impl World {
         }
     }
 
-    fn damage_mob(&mut self, i: usize, dmg: i32, origin: (f32, f32), crit: bool, content: &Content) {
+    fn damage_mob(&mut self, i: usize, dmg: i32, origin: (f32, f32), crit: bool, kb_mult: f32, content: &Content) {
         if i >= self.mobs.len() {
             return;
         }
@@ -1111,7 +1210,7 @@ impl World {
         // knock the target away from whoever hit it — heavier for crits, bosses resist
         let (mx, my) = (self.mobs[i].x, self.mobs[i].y);
         let d = ((mx - origin.0).powi(2) + (my - origin.1).powi(2)).sqrt().max(0.001);
-        let kb = if self.mobs[i].boss { 40.0 } else if crit { 220.0 } else { 140.0 };
+        let kb = (if self.mobs[i].boss { 40.0 } else if crit { 220.0 } else { 140.0 }) * kb_mult;
         self.mobs[i].kx += (mx - origin.0) / d * kb;
         self.mobs[i].ky += (my - origin.1) / d * kb;
         self.shake += if crit { 4.0 } else { 2.0 };
@@ -1149,8 +1248,9 @@ impl World {
         }
         for d in &def.drops {
             if gen_range(0.0_f32, 1.0_f32) < d.chance {
+                let inst = self.make_loot(content, &d.item);
                 self.drops.push(Drop {
-                    item: d.item.clone(),
+                    item: inst,
                     x: m.x + gen_range(-6.0_f32, 6.0_f32),
                     y: m.y + gen_range(-6.0_f32, 6.0_f32),
                     t: 0.0,
@@ -1205,7 +1305,7 @@ impl World {
             self.events.push(GameEvent::Cast);
             let (tx, ty) = (self.mobs[ti].x, self.mobs[ti].y);
             self.bursts.push(Burst { x: tx, y: ty, radius: 14.0, t: 0.3, color: spell.color.clone() });
-            self.damage_mob(ti, spell.damage, (px, py), false, content);
+            self.damage_mob(ti, spell.damage, (px, py), false, 1.0, content);
         } else if spell.damage > 0 && spell.radius > 0.0 {
             self.player.mp -= spell.cost;
             self.events.push(GameEvent::Cast);
@@ -1220,7 +1320,7 @@ impl World {
                 .map(|(i, _)| i)
                 .collect();
             for i in hits.into_iter().rev() {
-                self.damage_mob(i, spell.damage, (px, py), false, content);
+                self.damage_mob(i, spell.damage, (px, py), false, 1.0, content);
             }
         } else if spell.heal > 0 {
             self.player.mp -= spell.cost;
@@ -1235,6 +1335,33 @@ impl World {
             self.bursts.push(Burst { x: px, y: py, radius: 16.0, t: 0.4, color: "#4fdc7f".to_string() });
             self.fct(px, py - 12.0, format!("+{}", spell.heal), false, (100, 240, 140));
         }
+    }
+
+    /// Roll random affixes for found loot; odds creep up with depth.
+    fn roll_affixes(&self, content: &Content) -> (Option<String>, Option<String>) {
+        let pchance = 22 + self.depth * 2;
+        let schance = 8 + self.depth;
+        let prefix = if !content.prefixes.is_empty() && gen_range(0, 100) < pchance {
+            Some(content.prefixes[gen_range(0, content.prefixes.len() as i32) as usize].id.clone())
+        } else {
+            None
+        };
+        let suffix = if !content.suffixes.is_empty() && gen_range(0, 100) < schance {
+            Some(content.suffixes[gen_range(0, content.suffixes.len() as i32) as usize].id.clone())
+        } else {
+            None
+        };
+        (prefix, suffix)
+    }
+
+    /// Affixes only make sense on gear; potions stay plain.
+    fn make_loot(&self, content: &Content, id: &str) -> ItemInst {
+        let equippable = content.item(id).map(|d| d.is_equippable()).unwrap_or(false);
+        if !equippable {
+            return ItemInst::plain(id);
+        }
+        let (prefix, suffix) = self.roll_affixes(content);
+        ItemInst { id: id.to_string(), prefix, suffix }
     }
 
     pub fn learn_skill(&mut self, content: &Content, id: &str) -> bool {
@@ -1349,7 +1476,7 @@ impl World {
                 let gold = (gen_range(8, 20) + self.depth * 4) as i64;
                 self.player.gold += gold;
                 let mut text = format!("+{} gold for the strike fund", gold);
-                if gen_range(0, 100) < 55 {
+                if gen_range(0, 100) < 65 {
                     let max_tier = 1 + self.depth / 2;
                     let pool: Vec<&str> = content
                         .items
@@ -1359,9 +1486,11 @@ impl World {
                         .collect();
                     if !pool.is_empty() {
                         let id = pool[gen_range(0, pool.len() as i32) as usize].to_string();
-                        if self.player.add_item(&id) {
-                            let name = content.item(&id).map(|d| d.name.clone()).unwrap_or(id);
-                            text = format!("{}, and: {}", text, name);
+                        let inst = self.make_loot(content, &id);
+                        if self.player.add_item(&inst) {
+                            let name = display_name(content, &inst);
+                            let mark = if inst.has_affix() { "✦ " } else { "" };
+                            text = format!("{}, and: {}{}", text, mark, name);
                         }
                     }
                 }

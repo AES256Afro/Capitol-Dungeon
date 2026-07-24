@@ -171,12 +171,16 @@ pub fn draw_world(world: &World, content: &Content, tex: &Textures) {
         draw_sprite(tex, if c.opened { "chest_open" } else { "chest" }, sx, sy, ts);
     }
 
-    // drops (bobbing)
+    // drops (bobbing; affixed loot glints)
     for d in &world.drops {
         let bob = (d.t * 4.0).sin() * 2.0 * s;
         let sx = d.x * s - cx - ts * 0.3;
         let sy = d.y * s - cy - ts * 0.3 + bob;
-        draw_sprite(tex, &format!("item:{}", d.item), sx, sy, ts * 0.6);
+        draw_sprite(tex, &format!("item:{}", d.item.id), sx, sy, ts * 0.6);
+        if d.item.has_affix() {
+            let tw = ((d.t * 6.0).sin() * 0.5 + 0.5).max(0.2);
+            draw_circle(sx + ts * 0.55, sy - 2.0, s * 1.2, Color::new(1.0, 0.85, 0.3, tw));
+        }
     }
 
     // npcs
@@ -664,8 +668,8 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
         draw_rectangle(dx, sy, 250.0, 40.0, Color::new(0.12, 0.1, 0.16, 1.0));
         draw_rectangle_lines(dx, sy, 250.0, 40.0, 2.0, border);
         draw_text(&slot.to_uppercase(), dx + 6.0, sy + 16.0, 13.0, hex("#8a7f9d"));
-        if let Some(id) = p.equipment.get(*slot) {
-            if let Some(t) = tex.get(&format!("item:{}", id)) {
+        if let Some(inst) = p.equipment.get(*slot) {
+            if let Some(t) = tex.get(&format!("item:{}", inst.id)) {
                 draw_texture_ex(
                     t,
                     dx + 6.0,
@@ -674,8 +678,9 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
                     DrawTextureParams { dest_size: Some(vec2(22.0, 22.0)), ..Default::default() },
                 );
             }
-            let name = content.item(id).map(|d| d.name.clone()).unwrap_or_else(|| id.clone());
-            draw_text(&name, dx + 34.0, sy + 30.0, 15.0, WHITE);
+            let name = crate::world::display_name(content, inst);
+            let col = if inst.has_affix() { hex("#ffd24a") } else { WHITE };
+            draw_text(&name, dx + 34.0, sy + 30.0, 13.0, col);
         } else {
             draw_text("—", dx + 34.0, sy + 30.0, 15.0, DARKGRAY);
         }
@@ -707,7 +712,7 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
         draw_rectangle(cx, cy, cell, cell, Color::new(0.12, 0.1, 0.16, 1.0));
         draw_rectangle_lines(cx, cy, cell, cell, 2.0, border);
         if let Some(st) = p.inventory.get(i) {
-            if let Some(t) = tex.get(&format!("item:{}", st.id)) {
+            if let Some(t) = tex.get(&format!("item:{}", st.inst.id)) {
                 draw_texture_ex(
                     t,
                     cx + 6.0,
@@ -715,6 +720,9 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
                     WHITE,
                     DrawTextureParams { dest_size: Some(vec2(cell - 12.0, cell - 12.0)), ..Default::default() },
                 );
+            }
+            if st.inst.has_affix() {
+                draw_circle(cx + 8.0, cy + 8.0, 3.0, hex("#ffd24a"));
             }
             if st.qty > 1 {
                 draw_text(&format!("{}", st.qty), cx + cell - 16.0, cy + cell - 6.0, 15.0, WHITE);
@@ -724,15 +732,34 @@ pub fn draw_inventory(world: &World, content: &Content, tex: &Textures, sel: usi
 
     // detail line for selection
     let detail_y = gy + 4.0 * (cell + 6.0) + 26.0;
-    let described: Option<&str> = if doll {
-        p.equipment.get(EQUIP_SLOTS[doll_sel.min(6)]).map(|s| s.as_str())
+    let described: Option<crate::world::ItemInst> = if doll {
+        p.equipment.get(EQUIP_SLOTS[doll_sel.min(6)]).cloned()
     } else {
-        p.inventory.get(sel).map(|s| s.id.as_str())
+        p.inventory.get(sel).map(|s| s.inst.clone())
     };
-    if let Some(id) = described {
-        if let Some(d) = content.item(id) {
-            for (i, l) in wrap_text(&format!("{} — {}", d.name, d.desc), 52).iter().enumerate() {
-                draw_text(l, gx, detail_y + i as f32 * 18.0, 16.0, WHITE);
+    if let Some(inst) = described {
+        if let Some(d) = content.item(&inst.id) {
+            let name = crate::world::display_name(content, &inst);
+            let wtag = if d.kind == "weapon" {
+                let wc = if d.wclass.is_empty() { "sword" } else { d.wclass.as_str() };
+                format!(" [{}]", wc)
+            } else {
+                String::new()
+            };
+            let (a, df, h, m, sp) = crate::world::inst_bonus(content, &inst);
+            let mut stats = Vec::new();
+            if a != 0 { stats.push(format!("{:+} ATK", a)); }
+            if df != 0 { stats.push(format!("{:+} DEF", df)); }
+            if h != 0 { stats.push(format!("{:+} HP", h)); }
+            if m != 0 { stats.push(format!("{:+} MP", m)); }
+            if sp != 0 { stats.push(format!("{:+} SPD", sp)); }
+            let statline = if stats.is_empty() { String::new() } else { format!(" ({})", stats.join(", ")) };
+            for (i, l) in wrap_text(&format!("{}{} — {}{}", name, wtag, d.desc, statline), 52)
+                .iter()
+                .enumerate()
+            {
+                let col = if inst.has_affix() && i == 0 { hex("#ffd24a") } else { WHITE };
+                draw_text(l, gx, detail_y + i as f32 * 18.0, 16.0, col);
             }
         }
     } else if doll {
@@ -782,7 +809,9 @@ pub fn draw_shop(world: &World, content: &Content, tex: &Textures, sel: usize, s
         }
     } else {
         for (i, st) in world.player.inventory.iter().enumerate() {
-            let Some(d) = content.item(&st.id) else { continue };
+            if content.item(&st.inst.id).is_none() {
+                continue;
+            }
             let col = i / 8;
             let row = i % 8;
             let rx = x + 12.0 + col as f32 * ((w - 24.0) / 2.0);
@@ -791,11 +820,14 @@ pub fn draw_shop(world: &World, content: &Content, tex: &Textures, sel: usize, s
             let rw = (w - 36.0) / 2.0;
             draw_rectangle(rx, ry, rw, 34.0, Color::new(0.12, 0.1, 0.16, 1.0));
             draw_rectangle_lines(rx, ry, rw, 34.0, 2.0, if selected { hex("#ffd24a") } else { hex("#4a4458") });
-            if let Some(t) = tex.get(&format!("item:{}", st.id)) {
+            if let Some(t) = tex.get(&format!("item:{}", st.inst.id)) {
                 draw_texture_ex(t, rx + 4.0, ry + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(26.0, 26.0)), ..Default::default() });
             }
-            draw_text(&format!("{} x{}", d.name, st.qty), rx + 36.0, ry + 15.0, 14.0, WHITE);
-            draw_text(&format!("sells {} g", d.value / 2), rx + 36.0, ry + 30.0, 13.0, hex("#ffd24a"));
+            let name = crate::world::display_name(content, &st.inst);
+            let ncol = if st.inst.has_affix() { hex("#ffd24a") } else { WHITE };
+            draw_text(&format!("{} x{}", name, st.qty), rx + 36.0, ry + 15.0, 13.0, ncol);
+            let price = (crate::world::inst_value(content, &st.inst) / 2).max(1);
+            draw_text(&format!("sells {} g", price), rx + 36.0, ry + 30.0, 13.0, hex("#ffd24a"));
         }
         if world.player.inventory.is_empty() {
             draw_text("Nothing to sell. Keep what you need!", x + 20.0, list_y + 20.0, 16.0, GRAY);

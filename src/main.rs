@@ -45,14 +45,15 @@ async fn load_custom_level() -> Option<CustomLevel> {
 
 fn use_or_equip(w: &mut World, content: &Content, idx: usize) {
     let Some(stack) = w.player.inventory.get(idx) else { return };
-    let id = stack.id.clone();
-    let Some(def) = content.item(&id).cloned() else { return };
+    let inst = stack.inst.clone();
+    let Some(def) = content.item(&inst.id).cloned() else { return };
     if def.is_equippable() {
         w.player.remove_item(idx);
-        if let Some(prev) = w.player.equipment.insert(def.kind.clone(), id) {
+        let name = world::display_name(content, &inst);
+        if let Some(prev) = w.player.equipment.insert(def.kind.clone(), inst) {
             w.player.add_item(&prev);
         }
-        w.toast(format!("Equipped: {}", def.name));
+        w.toast(format!("Equipped: {}", name));
         w.add_stat("equips", 1, content);
     } else if def.is_usable() {
         let (_, _, maxhp, maxmp, _) = w.player.totals(content);
@@ -65,11 +66,10 @@ fn use_or_equip(w: &mut World, content: &Content, idx: usize) {
 
 fn unequip(w: &mut World, content: &Content, slot_idx: usize) {
     let slot = world::EQUIP_SLOTS[slot_idx.min(world::EQUIP_SLOTS.len() - 1)];
-    if let Some(id) = w.player.equipment.get(slot).cloned() {
-        if w.player.add_item(&id) {
+    if let Some(inst) = w.player.equipment.get(slot).cloned() {
+        if w.player.add_item(&inst) {
             w.player.equipment.remove(slot);
-            let name = content.item(&id).map(|d| d.name.clone()).unwrap_or(id);
-            w.toast(format!("Unequipped: {}", name));
+            w.toast(format!("Unequipped: {}", world::display_name(content, &inst)));
         } else {
             w.toast("Backpack is full.".to_string());
         }
@@ -310,10 +310,7 @@ async fn main() {
                     }
                     if is_key_pressed(KeyCode::X) {
                         if let Some(st) = world.player.inventory.get(*sel) {
-                            let name = content
-                                .item(&st.id)
-                                .map(|d| d.name.clone())
-                                .unwrap_or_else(|| st.id.clone());
+                            let name = world::display_name(&content, &st.inst);
                             world.player.remove_item(*sel);
                             world.toast(format!("Dropped: {} (a comrade will find it)", name));
                         }
@@ -399,19 +396,19 @@ async fn main() {
                 if let Some(i) = do_transact {
                     if *selling {
                         if let Some(st) = world.player.inventory.get(i) {
-                            let id = st.id.clone();
-                            if let Some(d) = content.item(&id).cloned() {
-                                world.player.remove_item(i);
-                                world.player.gold += (d.value / 2) as i64;
-                                sfx.pickup();
-                                world.toast(format!("Sold {} for {} gold.", d.name, d.value / 2));
-                            }
+                            let inst = st.inst.clone();
+                            let price = (world::inst_value(&content, &inst) / 2).max(1) as i64;
+                            let name = world::display_name(&content, &inst);
+                            world.player.remove_item(i);
+                            world.player.gold += price;
+                            sfx.pickup();
+                            world.toast(format!("Sold {} for {} gold.", name, price));
                         }
                     } else if i < world.shop_stock.len() {
                         let id = world.shop_stock[i].clone();
                         if let Some(d) = content.item(&id).cloned() {
                             if world.player.gold >= d.value as i64 {
-                                if world.player.add_item(&id) {
+                                if world.player.add_item(&world::ItemInst::plain(&id)) {
                                     world.player.gold -= d.value as i64;
                                     world.add_stat("buys", 1, &content);
                                     sfx.chest();

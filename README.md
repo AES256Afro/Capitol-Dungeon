@@ -69,7 +69,14 @@ Everything else, the goblins financialized. Go fix that.
   every mob taunt, comrade conversation, emote, graffito, and item pickup
 - **Emotes** — idle enemies *laminate non-compete agreements* and *do trust
   falls, alone*; comrades *stir the soup approvingly* (`data/emotes.json`)
-- **Rich loot** — every enemy now has a 4-6 item drop table across all 58 items
+- **Rich loot** — every enemy has a 4-6 item drop table across **65 items**
+- **Weapon classes** — daggers strike fast, hammers hit slow with huge
+  knockback, spears out-range everything, scythes sweep a wide arc, swords
+  balance it all; 18 weapons across 5 classes (`wclass` in items.json)
+- **Random item bonuses** — found gear can roll prefixes (Sturdy, Vicious,
+  Nimble…) and suffixes (of the Commune, of the Long March, of Deep Roots…)
+  with stat bonuses and boosted sell value; affixed loot glints on the
+  ground and shows gold in your pack (`data/affixes.json`)
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
 
 See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,

@@ -46,6 +46,7 @@ pub struct ItemDef {
     pub mana: i32,
     pub value: i32,
     pub tier: i32,
+    pub wclass: String, // dagger|sword|hammer|spear|scythe ("" = unarmed/sword)
     pub palette: HashMap<String, String>,
     pub sprite: Vec<String>,
 }
@@ -96,6 +97,25 @@ pub struct SpellDef {
     pub range: f32,
     pub unlock_level: i32,
     pub color: String,
+}
+
+#[derive(Deserialize, Clone, Copy, Default)]
+#[serde(default)]
+pub struct StatBlock {
+    pub atk: i32,
+    pub def: i32,
+    pub hp: i32,
+    pub mp: i32,
+    pub spd: i32,
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
+pub struct AffixDef {
+    pub id: String,
+    pub name: String,
+    pub value_mult: f32,
+    pub stats: StatBlock,
 }
 
 #[derive(Deserialize, Clone, Default)]
@@ -158,6 +178,11 @@ struct EmotesFile {
     npc: Vec<String>,
     mob: Vec<String>,
 }
+#[derive(Deserialize, Default)]
+struct AffixesFile {
+    prefixes: Vec<AffixDef>,
+    suffixes: Vec<AffixDef>,
+}
 
 pub struct Content {
     pub mobs: Vec<MobDef>,
@@ -170,11 +195,19 @@ pub struct Content {
     pub skills: Vec<SkillDef>,
     pub emotes_npc: Vec<String>,
     pub emotes_mob: Vec<String>,
+    pub prefixes: Vec<AffixDef>,
+    pub suffixes: Vec<AffixDef>,
 }
 
 impl Content {
     pub fn item(&self, id: &str) -> Option<&ItemDef> {
         self.items.iter().find(|i| i.id == id)
+    }
+    pub fn prefix(&self, id: &str) -> Option<&AffixDef> {
+        self.prefixes.iter().find(|a| a.id == id)
+    }
+    pub fn suffix(&self, id: &str) -> Option<&AffixDef> {
+        self.suffixes.iter().find(|a| a.id == id)
     }
 }
 
@@ -189,6 +222,7 @@ const DEFAULT_GRAFFITI: &str = include_str!("../data/graffiti.json");
 const DEFAULT_BANTER: &str = include_str!("../data/banter.json");
 const DEFAULT_SKILLS: &str = include_str!("../data/skills.json");
 const DEFAULT_EMOTES: &str = include_str!("../data/emotes.json");
+const DEFAULT_AFFIXES: &str = include_str!("../data/affixes.json");
 
 async fn load_or(path: &str, fallback: &str) -> String {
     match macroquad::file::load_string(path).await {
@@ -217,6 +251,7 @@ pub async fn load_content() -> Content {
     let banter_s = load_or("data/banter.json", DEFAULT_BANTER).await;
     let skills_s = load_or("data/skills.json", DEFAULT_SKILLS).await;
     let emotes_s = load_or("data/emotes.json", DEFAULT_EMOTES).await;
+    let affixes_s = load_or("data/affixes.json", DEFAULT_AFFIXES).await;
 
     let mobs: MobsFile = parse(&mobs_s, DEFAULT_MOBS, "mobs");
     let items: ItemsFile = parse(&items_s, DEFAULT_ITEMS, "items");
@@ -227,6 +262,7 @@ pub async fn load_content() -> Content {
     let banter: BanterFile = parse(&banter_s, DEFAULT_BANTER, "banter");
     let skills: SkillsFile = parse(&skills_s, DEFAULT_SKILLS, "skills");
     let emotes: EmotesFile = parse(&emotes_s, DEFAULT_EMOTES, "emotes");
+    let affixes: AffixesFile = parse(&affixes_s, DEFAULT_AFFIXES, "affixes");
 
     Content {
         mobs: mobs.mobs,
@@ -239,5 +275,7 @@ pub async fn load_content() -> Content {
         skills: skills.skills,
         emotes_npc: emotes.npc,
         emotes_mob: emotes.mob,
+        prefixes: affixes.prefixes,
+        suffixes: affixes.suffixes,
     }
 }

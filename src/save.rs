@@ -2,7 +2,7 @@
 //! (via a tiny JS plugin registered in web/index.html).
 
 use crate::content::Content;
-use crate::world::{ItemStack, World};
+use crate::world::{ItemInst, ItemStack, World};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -22,8 +22,12 @@ pub struct RunSave {
     pub gold: i64,
     pub skill_points: i32,
     pub skills: Vec<String>,
+    // legacy pre-affix fields; still read so old saves migrate cleanly
     pub inventory: Vec<(String, i32)>,
     pub equipment: Vec<(String, String)>,
+    // current format: (item id, prefix, suffix, qty) / (slot, id, prefix, suffix)
+    pub inventory2: Vec<(String, Option<String>, Option<String>, i32)>,
+    pub equipment2: Vec<(String, String, Option<String>, Option<String>)>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -102,17 +106,19 @@ pub fn snapshot(world: &World, include_run: bool) -> SaveData {
                 gold: world.player.gold,
                 skill_points: world.player.skill_points,
                 skills: world.player.skills.clone(),
-                inventory: world
+                inventory: Vec::new(),
+                equipment: Vec::new(),
+                inventory2: world
                     .player
                     .inventory
                     .iter()
-                    .map(|s| (s.id.clone(), s.qty))
+                    .map(|s| (s.inst.id.clone(), s.inst.prefix.clone(), s.inst.suffix.clone(), s.qty))
                     .collect(),
-                equipment: world
+                equipment2: world
                     .player
                     .equipment
                     .iter()
-                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .map(|(k, v)| (k.clone(), v.id.clone(), v.prefix.clone(), v.suffix.clone()))
                     .collect(),
             })
         } else {
@@ -154,12 +160,35 @@ pub fn apply(world: &mut World, content: &Content, sd: &SaveData) -> bool {
     if world.player.skills.is_empty() && run.skill_points == 0 {
         world.player.skill_points = (run.level - 1).max(0);
     }
-    world.player.inventory = run
-        .inventory
-        .iter()
-        .map(|(id, qty)| ItemStack { id: id.clone(), qty: *qty })
-        .collect();
-    world.player.equipment = run.equipment.iter().cloned().collect();
+    if !run.inventory2.is_empty() || !run.equipment2.is_empty() {
+        world.player.inventory = run
+            .inventory2
+            .iter()
+            .map(|(id, pre, suf, qty)| ItemStack {
+                inst: ItemInst { id: id.clone(), prefix: pre.clone(), suffix: suf.clone() },
+                qty: *qty,
+            })
+            .collect();
+        world.player.equipment = run
+            .equipment2
+            .iter()
+            .map(|(slot, id, pre, suf)| {
+                (slot.clone(), ItemInst { id: id.clone(), prefix: pre.clone(), suffix: suf.clone() })
+            })
+            .collect();
+    } else {
+        // migrate a pre-affix save
+        world.player.inventory = run
+            .inventory
+            .iter()
+            .map(|(id, qty)| ItemStack { inst: ItemInst::plain(id), qty: *qty })
+            .collect();
+        world.player.equipment = run
+            .equipment
+            .iter()
+            .map(|(slot, id)| (slot.clone(), ItemInst::plain(id)))
+            .collect();
+    }
     world.depth = run.depth.max(1);
     world.load_level(content, None);
     true
