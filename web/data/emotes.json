@@ -1,0 +1,30 @@
+{
+  "npc": [
+    "*warms hands by the fire*",
+    "*stirs the soup and nods approvingly*",
+    "*sharpens a picket sign*",
+    "*hums an old union tune*",
+    "*patches a coat with a red square*",
+    "*waters a stubborn little mushroom*",
+    "*rereads a well-worn pamphlet*",
+    "*sweeps the safe room floor diagonal*",
+    "*adds a stone to the fire ring*",
+    "*waves at the minimap, just in case*",
+    "*ladles soup for nobody in particular, then somebody arrives*",
+    "*chalks a small fist on the floor*"
+  ],
+  "mob": [
+    "*counts coins obsessively*",
+    "*checks an imaginary portfolio*",
+    "*files a grievance against sunlight*",
+    "*practices a firm, dominant handshake*",
+    "*rehearses a TED talk to the wall*",
+    "*polishes a 'RISE & GRIND' plaque*",
+    "*updates a spreadsheet of enemies*",
+    "*measures the corridor for market value*",
+    "*whispers 'synergy' to no one*",
+    "*staples an eviction notice to moss*",
+    "*does a trust fall, alone, and falls*",
+    "*laminates a non-compete agreement*"
+  ]
+}

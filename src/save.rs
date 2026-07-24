@@ -20,6 +20,8 @@ pub struct RunSave {
     pub xp: i64,
     pub level: i32,
     pub gold: i64,
+    pub skill_points: i32,
+    pub skills: Vec<String>,
     pub inventory: Vec<(String, i32)>,
     pub equipment: Vec<(String, String)>,
 }
@@ -98,6 +100,8 @@ pub fn snapshot(world: &World, include_run: bool) -> SaveData {
                 xp: world.player.xp,
                 level: world.player.level,
                 gold: world.player.gold,
+                skill_points: world.player.skill_points,
+                skills: world.player.skills.clone(),
                 inventory: world
                     .player
                     .inventory
@@ -144,6 +148,12 @@ pub fn apply(world: &mut World, content: &Content, sd: &SaveData) -> bool {
     world.player.xp = run.xp.max(0);
     world.player.level = run.level.max(1);
     world.player.gold = run.gold.max(0);
+    world.player.skill_points = run.skill_points.max(0);
+    world.player.skills = run.skills.clone();
+    // saves from before the skill system existed: grant the points they earned
+    if world.player.skills.is_empty() && run.skill_points == 0 {
+        world.player.skill_points = (run.level - 1).max(0);
+    }
     world.player.inventory = run
         .inventory
         .iter()

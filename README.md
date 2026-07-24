@@ -62,6 +62,14 @@ Everything else, the goblins financialized. Go fix that.
 - **Sitcom-grade satire** — middle-management mummies, unyielding knights in
   absurd denial, gaslighting gremlins, a propane-calm handyman, a portal-weary
   cellar scientist, and the Mud Collective's thirty-seven-year-old delegate
+- **The Solidarity Tree** — a 3-branch, 15-node skill tree (Picket Line /
+  Mutual Aid / Class Consciousness): crit builds, dodge builds, cheap-spell
+  builds; one point per level, data-driven in `data/skills.json`
+- **Dungeon chat log** — a live feed plus a full scrollable transcript (T) of
+  every mob taunt, comrade conversation, emote, graffito, and item pickup
+- **Emotes** — idle enemies *laminate non-compete agreements* and *do trust
+  falls, alone*; comrades *stir the soup approvingly* (`data/emotes.json`)
+- **Rich loot** — every enemy now has a 4-6 item drop table across all 58 items
 - **Runs everywhere** — native macOS/Linux/Windows, and in any browser via WASM
 
 See [ROADMAP.md](ROADMAP.md) for where this is going (saves, music, quests,
@@ -77,6 +85,8 @@ co-op multiplayer, Discord Activities, and more).
 | Shift / K | Dodge-roll (i-frames) |
 | E | Interact (talk, shop, chest, graffiti, rest, descend, **recruit fighters**) |
 | I | Inventory & paper doll |
+| P | Skill tree (the Solidarity Tree) |
+| T | Chat log (everything mobs & comrades have said) |
 | V | Achievements |
 | C | Character editor (from menu) |
 | F9 | Level creator |

@@ -10,4 +10,7 @@ cp target/wasm32-unknown-unknown/release/capitol-dungeon.wasm web/
 # ship the data files so the wasm build can load (and players can mod) them
 rm -rf web/data
 cp -R data web/data
-echo "Done. web/ is ready to serve or deploy to any static host."
+# bump the service-worker cache version so installed PWAs pick up this build
+STAMP=$(date +%s)
+sed -i '' -E "s/capitol-dungeon-v[0-9a-z]+/capitol-dungeon-v${STAMP}/" web/sw.js
+echo "Done (cache capitol-dungeon-v${STAMP}). web/ is ready to serve or deploy."

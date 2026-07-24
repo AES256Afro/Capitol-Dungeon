@@ -1,6 +1,6 @@
 // Capitol Dungeon service worker: cache-first so the game runs offline
 // once installed. Bump CACHE on each release to invalidate old assets.
-const CACHE = 'capitol-dungeon-v3';
+const CACHE = 'capitol-dungeon-v1784905742';
 const ASSETS = [
   '.',
   'index.html',
@@ -31,14 +31,13 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+// network-first: always fresh when online, cached copy keeps it playable offline
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(
-      (hit) => hit || fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
-        return res;
-      }).catch(() => hit)
-    )
+    fetch(e.request).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(e.request, copy));
+      return res;
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });

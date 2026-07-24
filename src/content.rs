@@ -100,6 +100,19 @@ pub struct SpellDef {
 
 #[derive(Deserialize, Clone, Default)]
 #[serde(default)]
+pub struct SkillDef {
+    pub id: String,
+    pub name: String,
+    pub desc: String,
+    pub branch: usize, // column in the tree
+    pub tier: i32,     // row in the tree
+    pub requires: String,
+    pub stat: String, // atk|def|hp|mp|spd|crit|dodge|mana_regen|gold|xp|focus
+    pub amount: f32,
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct AchievementDef {
     pub id: String,
     pub name: String,
@@ -136,6 +149,15 @@ struct GraffitiFile {
 struct BanterFile {
     banter: Vec<BanterDef>,
 }
+#[derive(Deserialize, Default)]
+struct SkillsFile {
+    skills: Vec<SkillDef>,
+}
+#[derive(Deserialize, Default)]
+struct EmotesFile {
+    npc: Vec<String>,
+    mob: Vec<String>,
+}
 
 pub struct Content {
     pub mobs: Vec<MobDef>,
@@ -145,6 +167,9 @@ pub struct Content {
     pub achievements: Vec<AchievementDef>,
     pub graffiti: Vec<String>,
     pub banter: Vec<BanterDef>,
+    pub skills: Vec<SkillDef>,
+    pub emotes_npc: Vec<String>,
+    pub emotes_mob: Vec<String>,
 }
 
 impl Content {
@@ -162,6 +187,8 @@ const DEFAULT_SPELLS: &str = include_str!("../data/spells.json");
 const DEFAULT_ACHIEVEMENTS: &str = include_str!("../data/achievements.json");
 const DEFAULT_GRAFFITI: &str = include_str!("../data/graffiti.json");
 const DEFAULT_BANTER: &str = include_str!("../data/banter.json");
+const DEFAULT_SKILLS: &str = include_str!("../data/skills.json");
+const DEFAULT_EMOTES: &str = include_str!("../data/emotes.json");
 
 async fn load_or(path: &str, fallback: &str) -> String {
     match macroquad::file::load_string(path).await {
@@ -188,6 +215,8 @@ pub async fn load_content() -> Content {
     let ach_s = load_or("data/achievements.json", DEFAULT_ACHIEVEMENTS).await;
     let graf_s = load_or("data/graffiti.json", DEFAULT_GRAFFITI).await;
     let banter_s = load_or("data/banter.json", DEFAULT_BANTER).await;
+    let skills_s = load_or("data/skills.json", DEFAULT_SKILLS).await;
+    let emotes_s = load_or("data/emotes.json", DEFAULT_EMOTES).await;
 
     let mobs: MobsFile = parse(&mobs_s, DEFAULT_MOBS, "mobs");
     let items: ItemsFile = parse(&items_s, DEFAULT_ITEMS, "items");
@@ -196,6 +225,8 @@ pub async fn load_content() -> Content {
     let ach: AchievementsFile = parse(&ach_s, DEFAULT_ACHIEVEMENTS, "achievements");
     let graf: GraffitiFile = parse(&graf_s, DEFAULT_GRAFFITI, "graffiti");
     let banter: BanterFile = parse(&banter_s, DEFAULT_BANTER, "banter");
+    let skills: SkillsFile = parse(&skills_s, DEFAULT_SKILLS, "skills");
+    let emotes: EmotesFile = parse(&emotes_s, DEFAULT_EMOTES, "emotes");
 
     Content {
         mobs: mobs.mobs,
@@ -205,5 +236,8 @@ pub async fn load_content() -> Content {
         achievements: ach.achievements,
         graffiti: graf.graffiti,
         banter: banter.banter,
+        skills: skills.skills,
+        emotes_npc: emotes.npc,
+        emotes_mob: emotes.mob,
     }
 }

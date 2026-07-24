@@ -24,6 +24,8 @@ enum Screen {
     Dead,
     Editor,
     CharEditor { sel: usize },
+    Log { scroll: usize },
+    Skills { branch: usize, tier: usize },
 }
 
 fn conf() -> Conf {
@@ -254,6 +256,11 @@ async fn main() {
                     screen = Screen::Inventory { sel: 0, doll: false, doll_sel: 0 };
                 } else if is_key_pressed(KeyCode::V) {
                     screen = Screen::Achievements;
+                } else if is_key_pressed(KeyCode::T) {
+                    screen = Screen::Log { scroll: 0 };
+                } else if is_key_pressed(KeyCode::P) {
+                    sfx.ui();
+                    screen = Screen::Skills { branch: 0, tier: 1 };
                 } else if is_key_pressed(KeyCode::F9) {
                     screen = Screen::Editor;
                 } else if is_key_pressed(KeyCode::Escape) {
@@ -493,6 +500,84 @@ async fn main() {
                     if is_key_pressed(KeyCode::Escape) {
                         screen = Screen::Menu;
                     }
+                }
+            }
+
+            Screen::Log { scroll } => {
+                let step = 3;
+                if is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W) {
+                    *scroll = (*scroll + step).min(world.log.len().saturating_sub(1));
+                }
+                if is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S) {
+                    *scroll = scroll.saturating_sub(step);
+                }
+                let (_, wheel) = mouse_wheel();
+                if wheel > 0.0 {
+                    *scroll = (*scroll + step).min(world.log.len().saturating_sub(1));
+                } else if wheel < 0.0 {
+                    *scroll = scroll.saturating_sub(step);
+                }
+                clear_background(BLACK);
+                ui::draw_world(&world, &content, &textures);
+                let s = *scroll;
+                dim();
+                ui::draw_log(&world, s);
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::Escape)
+                    || is_key_pressed(KeyCode::T)
+                    || !tin.taps.is_empty()
+                {
+                    screen = Screen::Play;
+                }
+            }
+
+            Screen::Skills { branch, tier } => {
+                if is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A) {
+                    *branch = branch.saturating_sub(1);
+                }
+                if is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D) {
+                    *branch = (*branch + 1).min(2);
+                }
+                if is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W) {
+                    *tier = tier.saturating_sub(1).max(1);
+                }
+                if is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S) {
+                    *tier = (*tier + 1).min(5);
+                }
+                let mut learn_now = is_key_pressed(KeyCode::Enter);
+                for t in &tin.taps {
+                    if let Some((b, ti)) = ui::skill_hit(0.0, 0.0, &content, *t) {
+                        if *branch == b && *tier == ti {
+                            learn_now = true;
+                        } else {
+                            *branch = b;
+                            *tier = ti;
+                        }
+                    }
+                }
+                if learn_now {
+                    let id = content
+                        .skills
+                        .iter()
+                        .find(|s| s.branch == *branch && s.tier == *tier as i32)
+                        .map(|s| s.id.clone());
+                    if let Some(id) = id {
+                        if world.learn_skill(&content, &id) {
+                            sfx.levelup();
+                            save::write(&save::snapshot(&world, true));
+                        } else {
+                            sfx.ui();
+                        }
+                    }
+                }
+                clear_background(BLACK);
+                ui::draw_world(&world, &content, &textures);
+                let (b, t) = (*branch, *tier);
+                dim();
+                ui::draw_skills(&world, &content, b, t);
+                touch_ui.draw(0);
+                if is_key_pressed(KeyCode::Escape) || is_key_pressed(KeyCode::P) {
+                    screen = Screen::Play;
                 }
             }
 

@@ -49,6 +49,8 @@ pub struct Player {
     pub hurt: f32,
     pub dodge_t: f32,
     pub dodge_cd: f32,
+    pub skill_points: i32,
+    pub skills: Vec<String>,
     pub inventory: Vec<ItemStack>,
     pub equipment: HashMap<String, String>,
 }
@@ -76,6 +78,8 @@ impl Player {
             hurt: 0.0,
             dodge_t: 0.0,
             dodge_cd: 0.0,
+            skill_points: 0,
+            skills: Vec::new(),
             inventory: vec![
                 ItemStack { id: "bread".into(), qty: 2 },
                 ItemStack { id: "rusty_shiv".into(), qty: 1 },
@@ -84,7 +88,16 @@ impl Player {
         }
     }
 
-    /// (atk, def, maxhp, maxmp, spd) with equipment bonuses applied.
+    /// Sum of learned-skill bonuses for a given stat key.
+    pub fn skill_sum(&self, c: &Content, stat: &str) -> f32 {
+        c.skills
+            .iter()
+            .filter(|s| s.stat == stat && self.skills.iter().any(|id| id == &s.id))
+            .map(|s| s.amount)
+            .sum()
+    }
+
+    /// (atk, def, maxhp, maxmp, spd) with equipment and skill bonuses applied.
     pub fn totals(&self, c: &Content) -> (i32, i32, i32, i32, f32) {
         let mut atk = self.base_atk;
         let mut def = self.base_def;
@@ -100,6 +113,11 @@ impl Player {
                 spd += it.spd as f32;
             }
         }
+        atk += self.skill_sum(c, "atk") as i32;
+        def += self.skill_sum(c, "def") as i32;
+        hp += self.skill_sum(c, "hp") as i32;
+        mp += self.skill_sum(c, "mp") as i32;
+        spd += self.skill_sum(c, "spd");
         (atk, def, hp, mp, spd)
     }
 
@@ -220,6 +238,19 @@ pub struct Particle {
     pub color: (u8, u8, u8),
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum LogKind {
+    Enemy,
+    Comrade,
+    System,
+}
+
+pub struct LogEntry {
+    pub who: String,
+    pub text: String,
+    pub kind: LogKind,
+}
+
 pub struct World {
     pub map: Map,
     pub player: Player,
@@ -236,6 +267,7 @@ pub struct World {
     pub stats: HashMap<String, i64>,
     pub unlocked: HashSet<String>,
     pub toasts: VecDeque<(String, f32)>,
+    pub log: VecDeque<LogEntry>,
     pub shop_stock: Vec<String>,
     pub mp_regen: f32,
     // game feel
@@ -280,6 +312,7 @@ impl World {
             stats: HashMap::new(),
             unlocked: HashSet::new(),
             toasts: VecDeque::new(),
+            log: VecDeque::new(),
             shop_stock: Vec::new(),
             mp_regen: 0.0,
             shake: 0.0,
@@ -474,9 +507,21 @@ impl World {
     }
 
     pub fn toast(&mut self, text: String) {
+        self.log_push(LogKind::System, "", &text);
         self.toasts.push_back((text, 4.0));
         if self.toasts.len() > 4 {
             self.toasts.pop_front();
+        }
+    }
+
+    pub fn log_push(&mut self, kind: LogKind, who: &str, text: &str) {
+        self.log.push_back(LogEntry {
+            who: who.to_string(),
+            text: text.to_string(),
+            kind,
+        });
+        if self.log.len() > 300 {
+            self.log.pop_front();
         }
     }
 
@@ -541,9 +586,10 @@ impl World {
         self.player.hp = self.player.hp.min(maxhp);
         self.player.mp = self.player.mp.min(maxmp);
 
-        // mp trickle
+        // mp trickle (Deep Breath speeds it up)
         self.mp_regen += dt;
-        if self.mp_regen > 1.6 {
+        let regen_interval = 1.6 * (1.0 - self.player.skill_sum(content, "mana_regen") / 100.0).max(0.3);
+        if self.mp_regen > regen_interval {
             self.mp_regen = 0.0;
             self.player.mp = (self.player.mp + 1).min(maxmp);
         }
@@ -579,7 +625,7 @@ impl World {
 
         // dodge-roll: a burst of speed with invulnerability frames
         if dodge && self.player.dodge_cd <= 0.0 {
-            self.player.dodge_cd = 0.75;
+            self.player.dodge_cd = 0.75 * (1.0 - self.player.skill_sum(content, "dodge") / 100.0).max(0.3);
             self.player.dodge_t = 0.24;
             let dir = if move_dir.length_squared() > 0.0 {
                 move_dir.normalize()
@@ -628,8 +674,9 @@ impl World {
                 }
             }
             let origin = (self.player.x, self.player.y);
+            let crit_chance = 12.0 + self.player.skill_sum(content, "crit");
             for i in hits.into_iter().rev() {
-                let crit = gen_range(0, 100) < 12;
+                let crit = gen_range(0.0_f32, 100.0_f32) < crit_chance;
                 let mut dmg = (atk_total - self.mobs[i].def + gen_range(0, 3)).max(1);
                 if crit {
                     dmg *= 2;
@@ -644,6 +691,7 @@ impl World {
         }
 
         // ---------- fighters attack mobs ----------
+        let mut chatter: Vec<(LogKind, String, String)> = Vec::new();
         let mut fighter_attacks: HashMap<usize, i32> = HashMap::new();
         for f in &mut self.fighters {
             let def = &content.npcs[f.def_idx];
@@ -668,6 +716,7 @@ impl World {
                     f.say = def.lines[gen_range(0, def.lines.len() as i32) as usize].clone();
                     f.say_t = 3.0;
                     f.say_cd = gen_range(7.0_f32, 15.0_f32);
+                    chatter.push((LogKind::Comrade, def.name.clone(), f.say.clone()));
                 }
                 let d = d2.sqrt().max(0.001);
                 let (mx, my) = (self.mobs[mi].x, self.mobs[mi].y);
@@ -765,6 +814,21 @@ impl World {
             }
             m.aggro = target.is_some();
 
+            if target.is_none() {
+                // idle exploiters near enough to watch occasionally emote
+                let near2 = (px - m.x).powi(2) + (py - m.y).powi(2);
+                m.say_cd -= dt * 0.2;
+                if m.say_cd <= 0.0
+                    && near2 < (TILE * 14.0).powi(2)
+                    && !content.emotes_mob.is_empty()
+                {
+                    let e = content.emotes_mob[gen_range(0, content.emotes_mob.len() as i32) as usize].clone();
+                    m.say = e.clone();
+                    m.say_t = 3.0;
+                    m.say_cd = gen_range(15.0_f32, 35.0_f32);
+                    chatter.push((LogKind::Enemy, def.name.clone(), e));
+                }
+            }
             if let Some((tx, ty, fighter_idx, dist2)) = target {
                 // capitalist propaganda broadcast
                 m.say_cd -= dt;
@@ -772,6 +836,7 @@ impl World {
                     m.say = def.lines[gen_range(0, def.lines.len() as i32) as usize].clone();
                     m.say_t = 3.0;
                     m.say_cd = gen_range(4.0_f32, 9.0_f32);
+                    chatter.push((LogKind::Enemy, def.name.clone(), m.say.clone()));
                 }
 
                 let dist = dist2.sqrt().max(0.001);
@@ -846,6 +911,11 @@ impl World {
             self.toast(format!("{} has fallen. The commune mourns — and remembers.", name));
         }
 
+        // flush speech collected during the entity loops into the chat log
+        for (kind, who, text) in chatter.drain(..) {
+            self.log_push(kind, &who, &text);
+        }
+
         // pick up drops by walking over them
         let mut picked: Vec<usize> = Vec::new();
         for (i, d) in self.drops.iter_mut().enumerate() {
@@ -906,11 +976,12 @@ impl World {
             let (_, _, mh, mm, _) = self.player.totals(content);
             self.player.hp = mh;
             self.player.mp = mm;
+            self.player.skill_points += 1;
             self.events.push(GameEvent::LevelUp);
             let (x, y) = (self.player.x, self.player.y);
             self.spawn_particles(x, y, 16, (255, 220, 90));
             self.toast(format!(
-                "Level {}! The movement grows stronger.",
+                "Level {}! The movement grows stronger. +1 skill point — press P.",
                 self.player.level
             ));
             self.bump_stat_max("level", self.player.level as i64, content);
@@ -960,9 +1031,14 @@ impl World {
             if *delay <= 0.0 {
                 let idx = *idx;
                 let text = text.clone();
+                let mut who = String::new();
                 if let Some(n) = self.npcs.get_mut(idx) {
-                    n.say = text;
+                    n.say = text.clone();
                     n.say_t = 4.5;
+                    who = content.npcs[n.def_idx].name.clone();
+                }
+                if !who.is_empty() {
+                    self.log_push(LogKind::Comrade, &who, &text);
                 }
                 self.pending_reply = None;
             }
@@ -997,16 +1073,30 @@ impl World {
             if let Some((a, b)) = pair {
                 if !content.banter.is_empty() && self.pending_reply.is_none() {
                     let line = &content.banter[gen_range(0, content.banter.len() as i32) as usize];
-                    self.npcs[a].say = line.a.clone();
+                    let text = line.a.clone();
+                    let reply = line.b.clone();
+                    self.npcs[a].say = text.clone();
                     self.npcs[a].say_t = 4.0;
-                    self.pending_reply = Some((b, line.b.clone(), 2.0));
+                    let who = content.npcs[self.npcs[a].def_idx].name.clone();
+                    self.pending_reply = Some((b, reply, 2.0));
+                    self.log_push(LogKind::Comrade, &who, &text);
                 }
             } else if let Some(&i) = near_player.first() {
-                // no partner around: an occasional line to themselves
+                // no partner around: a line to themselves, or a little emote
                 let def = &content.npcs[self.npcs[i].def_idx];
-                if !def.lines.is_empty() && gen_range(0, 100) < 40 {
-                    self.npcs[i].say = def.lines[gen_range(0, def.lines.len() as i32) as usize].clone();
+                let roll = gen_range(0, 100);
+                let text = if roll < 25 && !content.emotes_npc.is_empty() {
+                    Some(content.emotes_npc[gen_range(0, content.emotes_npc.len() as i32) as usize].clone())
+                } else if roll < 55 && !def.lines.is_empty() {
+                    Some(def.lines[gen_range(0, def.lines.len() as i32) as usize].clone())
+                } else {
+                    None
+                };
+                if let Some(text) = text {
+                    let who = def.name.clone();
+                    self.npcs[i].say = text.clone();
                     self.npcs[i].say_t = 4.0;
+                    self.log_push(LogKind::Comrade, &who, &text);
                 }
             }
         }
@@ -1045,13 +1135,15 @@ impl World {
         self.slowmo = self.slowmo.max(if def.boss { 0.25 } else { 0.09 });
         self.events.push(GameEvent::Kill);
         self.spawn_particles(m.x, m.y, if def.boss { 30 } else { 12 }, (255, 255, 255));
-        let gold = if def.gold_max > def.gold_min {
+        let base_gold = if def.gold_max > def.gold_min {
             gen_range(def.gold_min, def.gold_max + 1) as i64
         } else {
             def.gold_min as i64
         };
+        let gold = (base_gold as f32 * (1.0 + self.player.skill_sum(content, "gold") / 100.0)) as i64;
         self.player.gold += gold;
-        self.player.xp += def.xp as i64;
+        self.player.xp +=
+            (def.xp as f32 * (1.0 + self.player.skill_sum(content, "xp") / 100.0)) as i64;
         if gold > 0 {
             self.fct(m.x, m.y - 4.0, format!("+{}g", gold), false, (255, 210, 74));
         }
@@ -1081,7 +1173,12 @@ impl World {
             .map(|(i, _)| i)
             .collect();
         let Some(&si) = known.get(slot) else { return };
-        let spell = content.spells[si].clone();
+        let mut spell = content.spells[si].clone();
+        // Focused Rage: cheaper casting
+        spell.cost = ((spell.cost as f32
+            * (1.0 - self.player.skill_sum(content, "focus") / 100.0))
+            .ceil() as i32)
+            .max(1);
         if self.player.mp < spell.cost {
             self.toast(format!("Not enough MP for {}.", spell.name));
             return;
@@ -1140,6 +1237,23 @@ impl World {
         }
     }
 
+    pub fn learn_skill(&mut self, content: &Content, id: &str) -> bool {
+        let Some(def) = content.skills.iter().find(|s| s.id == id).cloned() else {
+            return false;
+        };
+        if self.player.skill_points <= 0 || self.player.skills.iter().any(|s| s == id) {
+            return false;
+        }
+        if !def.requires.is_empty() && !self.player.skills.iter().any(|s| s == &def.requires) {
+            return false;
+        }
+        self.player.skill_points -= 1;
+        self.player.skills.push(id.to_string());
+        self.toast(format!("Skill learned: {} — {}", def.name, def.desc));
+        self.add_stat("skills_learned", 1, content);
+        true
+    }
+
     // ---------- interactions (E key) ----------
 
     pub fn interact(&mut self, content: &Content) -> Interaction {
@@ -1187,8 +1301,10 @@ impl World {
             };
             self.npcs[i].say = line.clone();
             self.npcs[i].say_t = 4.0;
+            let who = def.name.clone();
+            self.log_push(LogKind::Comrade, &who, &line);
             self.add_stat("talks", 1, content);
-            return Interaction::Dialog { who: def.name.clone(), text: line };
+            return Interaction::Dialog { who, text: line };
         }
 
         // recruit a fighter comrade
@@ -1276,6 +1392,7 @@ impl World {
                 self.stats.insert(key, 1);
                 self.add_stat("graffiti", 1, content);
             }
+            self.log_push(LogKind::System, "The wall", &text);
             return Interaction::Dialog { who: "Graffiti on the wall".to_string(), text };
         }
 

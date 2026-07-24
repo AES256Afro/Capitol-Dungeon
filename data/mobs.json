@@ -3,8 +3,14 @@
     {
       "id": "rat",
       "name": "Rat Racer",
-      "hp": 8, "atk": 2, "def": 0, "speed": 62, "xp": 4,
-      "gold_min": 1, "gold_max": 3, "tier": 1,
+      "hp": 8,
+      "atk": 2,
+      "def": 0,
+      "speed": 62,
+      "xp": 4,
+      "gold_min": 1,
+      "gold_max": 3,
+      "tier": 1,
       "lines": [
         "Gotta grind! Gotta climb!",
         "The race never ends, and that's GOOD!",
@@ -12,8 +18,30 @@
         "I'll be a middle-manager rat someday!",
         "Hustle culture forever!"
       ],
-      "drops": [ { "item": "bread", "chance": 0.25 } ],
-      "palette": { "a": "#8a7f8d", "b": "#5c5460", "e": "#ff5566", "t": "#c9a0dc" },
+      "drops": [
+        {
+          "item": "bread",
+          "chance": 0.25
+        },
+        {
+          "item": "soup_of_day",
+          "chance": 0.15
+        },
+        {
+          "item": "seed_packet",
+          "chance": 0.12
+        },
+        {
+          "item": "worn_boots",
+          "chance": 0.04
+        }
+      ],
+      "palette": {
+        "a": "#8a7f8d",
+        "b": "#5c5460",
+        "e": "#ff5566",
+        "t": "#c9a0dc"
+      },
       "sprite": [
         "............",
         "............",
@@ -32,8 +60,14 @@
     {
       "id": "insect",
       "name": "Debt Mite",
-      "hp": 6, "atk": 2, "def": 0, "speed": 48, "xp": 3,
-      "gold_min": 0, "gold_max": 2, "tier": 1,
+      "hp": 6,
+      "atk": 2,
+      "def": 0,
+      "speed": 48,
+      "xp": 3,
+      "gold_min": 0,
+      "gold_max": 2,
+      "tier": 1,
       "lines": [
         "Compound interest, baby!",
         "Your debt feeds the swarm!",
@@ -41,8 +75,29 @@
         "22.9% APR is a fair deal!",
         "We own your future!"
       ],
-      "drops": [ { "item": "copper_ring", "chance": 0.05 } ],
-      "palette": { "a": "#b8452f", "b": "#7a2a1a", "e": "#ffe066" },
+      "drops": [
+        {
+          "item": "copper_ring",
+          "chance": 0.05
+        },
+        {
+          "item": "zine",
+          "chance": 0.15
+        },
+        {
+          "item": "strike_coffee",
+          "chance": 0.12
+        },
+        {
+          "item": "tin_ring",
+          "chance": 0.08
+        }
+      ],
+      "palette": {
+        "a": "#b8452f",
+        "b": "#7a2a1a",
+        "e": "#ffe066"
+      },
       "sprite": [
         "............",
         "............",
@@ -61,8 +116,14 @@
     {
       "id": "snake",
       "name": "Payday Python",
-      "hp": 14, "atk": 4, "def": 1, "speed": 52, "xp": 7,
-      "gold_min": 2, "gold_max": 6, "tier": 1,
+      "hp": 14,
+      "atk": 4,
+      "def": 1,
+      "speed": 52,
+      "xp": 7,
+      "gold_min": 2,
+      "gold_max": 6,
+      "tier": 1,
       "lines": [
         "Just a ssssmall loan...",
         "Sign here. And here. And here.",
@@ -70,8 +131,30 @@
         "Wrap yourself in my terms of ssservice!",
         "Default, and I collect your bonesss."
       ],
-      "drops": [ { "item": "red_potion", "chance": 0.15 } ],
-      "palette": { "a": "#4fae4f", "b": "#2e7d2e", "e": "#ffcc00", "t": "#ff5566" },
+      "drops": [
+        {
+          "item": "red_potion",
+          "chance": 0.15
+        },
+        {
+          "item": "bread_knife",
+          "chance": 0.08
+        },
+        {
+          "item": "soup_of_day",
+          "chance": 0.15
+        },
+        {
+          "item": "garden_clogs",
+          "chance": 0.06
+        }
+      ],
+      "palette": {
+        "a": "#4fae4f",
+        "b": "#2e7d2e",
+        "e": "#ffcc00",
+        "t": "#ff5566"
+      },
       "sprite": [
         "............",
         "..aaaa......",
@@ -90,8 +173,14 @@
     {
       "id": "skeleton",
       "name": "Skeleton Shareholder",
-      "hp": 18, "atk": 4, "def": 1, "speed": 42, "xp": 9,
-      "gold_min": 3, "gold_max": 8, "tier": 1,
+      "hp": 18,
+      "atk": 4,
+      "def": 1,
+      "speed": 42,
+      "xp": 9,
+      "gold_min": 3,
+      "gold_max": 8,
+      "tier": 1,
       "lines": [
         "Profit is the only virtue!",
         "I died at my desk and I'd do it again!",
@@ -100,8 +189,34 @@
         "The board demands your bones!",
         "Quarterly growth! Eternal growth!"
       ],
-      "drops": [ { "item": "rusty_shiv", "chance": 0.12 }, { "item": "copper_ring", "chance": 0.08 } ],
-      "palette": { "a": "#e8e0d0", "b": "#a09880", "e": "#111111", "r": "#cc3333" },
+      "drops": [
+        {
+          "item": "rusty_shiv",
+          "chance": 0.12
+        },
+        {
+          "item": "copper_ring",
+          "chance": 0.08
+        },
+        {
+          "item": "wool_cap",
+          "chance": 0.08
+        },
+        {
+          "item": "strike_coffee",
+          "chance": 0.1
+        },
+        {
+          "item": "patched_trousers",
+          "chance": 0.07
+        }
+      ],
+      "palette": {
+        "a": "#e8e0d0",
+        "b": "#a09880",
+        "e": "#111111",
+        "r": "#cc3333"
+      },
       "sprite": [
         "....aaaa....",
         "...aaaaaa...",
@@ -120,8 +235,14 @@
     {
       "id": "goblin",
       "name": "Goblin Landlord",
-      "hp": 24, "atk": 6, "def": 2, "speed": 55, "xp": 14,
-      "gold_min": 5, "gold_max": 14, "tier": 2,
+      "hp": 24,
+      "atk": 6,
+      "def": 2,
+      "speed": 55,
+      "xp": 14,
+      "gold_min": 5,
+      "gold_max": 14,
+      "tier": 2,
       "lines": [
         "Rent is due, adventurer!",
         "That's a lovely corpse. I'll charge it rent.",
@@ -130,8 +251,39 @@
         "Housing is an investment vehicle, not a right!",
         "Eviction notice, effective NOW!"
       ],
-      "drops": [ { "item": "hardhat", "chance": 0.12 }, { "item": "wooden_buckler", "chance": 0.1 } ],
-      "palette": { "a": "#6faf3f", "b": "#4a7a28", "e": "#ffdd44", "g": "#ffaa00", "c": "#7a5230" },
+      "drops": [
+        {
+          "item": "hardhat",
+          "chance": 0.12
+        },
+        {
+          "item": "wooden_buckler",
+          "chance": 0.1
+        },
+        {
+          "item": "canvas_workpants",
+          "chance": 0.08
+        },
+        {
+          "item": "pot_lid",
+          "chance": 0.1
+        },
+        {
+          "item": "crowbar",
+          "chance": 0.06
+        },
+        {
+          "item": "free_lunch",
+          "chance": 0.12
+        }
+      ],
+      "palette": {
+        "a": "#6faf3f",
+        "b": "#4a7a28",
+        "e": "#ffdd44",
+        "g": "#ffaa00",
+        "c": "#7a5230"
+      },
       "sprite": [
         "..b......b..",
         "..ab....ba..",
@@ -150,8 +302,14 @@
     {
       "id": "ghoul",
       "name": "Crypto Ghoul",
-      "hp": 38, "atk": 9, "def": 2, "speed": 50, "xp": 24,
-      "gold_min": 0, "gold_max": 30, "tier": 3,
+      "hp": 38,
+      "atk": 9,
+      "def": 2,
+      "speed": 50,
+      "xp": 24,
+      "gold_min": 0,
+      "gold_max": 30,
+      "tier": 3,
       "lines": [
         "HODL your screams!",
         "It's not a pyramid, it's a triangle of opportunity!",
@@ -159,8 +317,34 @@
         "I tokenized this dungeon's air supply!",
         "Number go up! NUMBER GO UP!"
       ],
-      "drops": [ { "item": "mana_potion", "chance": 0.2 }, { "item": "comrade_band", "chance": 0.06 } ],
-      "palette": { "a": "#7fd4c9", "b": "#3f8a80", "e": "#ff44aa", "d": "#222833" },
+      "drops": [
+        {
+          "item": "mana_potion",
+          "chance": 0.2
+        },
+        {
+          "item": "comrade_band",
+          "chance": 0.06
+        },
+        {
+          "item": "union_tea",
+          "chance": 0.12
+        },
+        {
+          "item": "thinkers_beret",
+          "chance": 0.05
+        },
+        {
+          "item": "nurses_band",
+          "chance": 0.06
+        }
+      ],
+      "palette": {
+        "a": "#7fd4c9",
+        "b": "#3f8a80",
+        "e": "#ff44aa",
+        "d": "#222833"
+      },
       "sprite": [
         "...aaaaaa...",
         "..aaaaaaaa..",
@@ -179,8 +363,14 @@
     {
       "id": "troll",
       "name": "Troll C.E.O.",
-      "hp": 70, "atk": 12, "def": 4, "speed": 34, "xp": 45,
-      "gold_min": 15, "gold_max": 40, "tier": 3,
+      "hp": 70,
+      "atk": 12,
+      "def": 4,
+      "speed": 34,
+      "xp": 45,
+      "gold_min": 15,
+      "gold_max": 40,
+      "tier": 3,
       "lines": [
         "I earned this cave with MY bootstraps!",
         "Layoffs build character! YOURS!",
@@ -189,8 +379,38 @@
         "Unions are a status ailment!",
         "Profit is more important than life!"
       ],
-      "drops": [ { "item": "union_hammer", "chance": 0.15 }, { "item": "chainmail", "chance": 0.1 } ],
-      "palette": { "a": "#8a6d4a", "b": "#5c4630", "e": "#ff3333", "t": "#d9c9a0" },
+      "drops": [
+        {
+          "item": "union_hammer",
+          "chance": 0.15
+        },
+        {
+          "item": "chainmail",
+          "chance": 0.1
+        },
+        {
+          "item": "pipe_wrench",
+          "chance": 0.1
+        },
+        {
+          "item": "steel_greaves",
+          "chance": 0.07
+        },
+        {
+          "item": "first_aid",
+          "chance": 0.12
+        },
+        {
+          "item": "riveted_jeans",
+          "chance": 0.07
+        }
+      ],
+      "palette": {
+        "a": "#8a6d4a",
+        "b": "#5c4630",
+        "e": "#ff3333",
+        "t": "#d9c9a0"
+      },
       "sprite": [
         "...aaaaaa...",
         "..aaaaaaaa..",
@@ -209,8 +429,15 @@
     {
       "id": "vulture",
       "name": "Vulture Capitalist",
-      "hp": 220, "atk": 16, "def": 5, "speed": 46, "xp": 200,
-      "gold_min": 80, "gold_max": 160, "tier": 4, "boss": true,
+      "hp": 220,
+      "atk": 16,
+      "def": 5,
+      "speed": 46,
+      "xp": 200,
+      "gold_min": 80,
+      "gold_max": 160,
+      "tier": 4,
+      "boss": true,
       "lines": [
         "I strip assets. You ARE assets.",
         "I bought this dungeon with leveraged debt!",
@@ -219,8 +446,39 @@
         "When you fall, I feast. That's the market working!",
         "I'll liquidate your little commune next."
       ],
-      "drops": [ { "item": "solidarity_saber", "chance": 0.5 }, { "item": "riot_shield", "chance": 0.4 } ],
-      "palette": { "a": "#3a3140", "b": "#241e2b", "e": "#ffcc00", "n": "#e8b04a", "w": "#efe6f7" },
+      "drops": [
+        {
+          "item": "solidarity_saber",
+          "chance": 0.5
+        },
+        {
+          "item": "riot_shield",
+          "chance": 0.4
+        },
+        {
+          "item": "commons_ring",
+          "chance": 0.25
+        },
+        {
+          "item": "guillotine_edge",
+          "chance": 0.2
+        },
+        {
+          "item": "golden_apple",
+          "chance": 0.35
+        },
+        {
+          "item": "wingtip_liberators",
+          "chance": 0.25
+        }
+      ],
+      "palette": {
+        "a": "#3a3140",
+        "b": "#241e2b",
+        "e": "#ffcc00",
+        "n": "#e8b04a",
+        "w": "#efe6f7"
+      },
       "sprite": [
         ".b........b.",
         "bab......bab",
@@ -239,8 +497,14 @@
     {
       "id": "slime",
       "name": "Ad Slime",
-      "hp": 10, "atk": 2, "def": 0, "speed": 38, "xp": 5,
-      "gold_min": 1, "gold_max": 4, "tier": 1,
+      "hp": 10,
+      "atk": 2,
+      "def": 0,
+      "speed": 38,
+      "xp": 5,
+      "gold_min": 1,
+      "gold_max": 4,
+      "tier": 1,
       "lines": [
         "SKIP AD IN 5... 4... NEVER!",
         "You seem interested in SWORDS. And DEBT.",
@@ -248,8 +512,30 @@
         "Accept all cookies. ALL OF THEM.",
         "Your attention is my dinner!"
       ],
-      "drops": [ { "item": "zine", "chance": 0.2 } ],
-      "palette": { "a": "#c26bd4", "b": "#8a3f9e", "e": "#ffffff", "p": "#ffde59" },
+      "drops": [
+        {
+          "item": "zine",
+          "chance": 0.2
+        },
+        {
+          "item": "seed_packet",
+          "chance": 0.15
+        },
+        {
+          "item": "free_lunch",
+          "chance": 0.08
+        },
+        {
+          "item": "quilted_jacket",
+          "chance": 0.05
+        }
+      ],
+      "palette": {
+        "a": "#c26bd4",
+        "b": "#8a3f9e",
+        "e": "#ffffff",
+        "p": "#ffde59"
+      },
       "sprite": [
         "............",
         "............",
@@ -268,8 +554,14 @@
     {
       "id": "wraith",
       "name": "HR Wraith",
-      "hp": 26, "atk": 7, "def": 1, "speed": 58, "xp": 16,
-      "gold_min": 4, "gold_max": 12, "tier": 2,
+      "hp": 26,
+      "atk": 7,
+      "def": 1,
+      "speed": 58,
+      "xp": 16,
+      "gold_min": 4,
+      "gold_max": 12,
+      "tier": 2,
       "lines": [
         "This meeting could have been an email. Your termination could not.",
         "We're a family here! A haunted, unpaid family!",
@@ -278,8 +570,34 @@
         "We value your feedback. We fear your union.",
         "The exit interview is ETERNAL."
       ],
-      "drops": [ { "item": "thinkers_beret", "chance": 0.08 }, { "item": "strike_coffee", "chance": 0.2 } ],
-      "palette": { "a": "#b8c8d8", "b": "#7a90a8", "e": "#3355ff", "t": "#4a5a70" },
+      "drops": [
+        {
+          "item": "thinkers_beret",
+          "chance": 0.08
+        },
+        {
+          "item": "strike_coffee",
+          "chance": 0.2
+        },
+        {
+          "item": "book_of_grievances",
+          "chance": 0.07
+        },
+        {
+          "item": "denim_patches",
+          "chance": 0.06
+        },
+        {
+          "item": "union_tea",
+          "chance": 0.1
+        }
+      ],
+      "palette": {
+        "a": "#b8c8d8",
+        "b": "#7a90a8",
+        "e": "#3355ff",
+        "t": "#4a5a70"
+      },
       "sprite": [
         "...aaaaaa...",
         "..aaaaaaaa..",
@@ -298,8 +616,14 @@
     {
       "id": "leech",
       "name": "Lobbyist Leech",
-      "hp": 22, "atk": 5, "def": 2, "speed": 44, "xp": 14,
-      "gold_min": 8, "gold_max": 18, "tier": 2,
+      "hp": 22,
+      "atk": 5,
+      "def": 2,
+      "speed": 44,
+      "xp": 14,
+      "gold_min": 8,
+      "gold_max": 18,
+      "tier": 2,
       "lines": [
         "I don't bribe. I *contribute*.",
         "Regulations? I ate them.",
@@ -308,8 +632,34 @@
         "A small donation and this all goes away.",
         "I've attached myself to seventeen senators."
       ],
-      "drops": [ { "item": "copper_ring", "chance": 0.15 }, { "item": "tin_ring", "chance": 0.15 } ],
-      "palette": { "a": "#5a7a3a", "b": "#3a5222", "e": "#ffe066", "m": "#c04a4a" },
+      "drops": [
+        {
+          "item": "copper_ring",
+          "chance": 0.15
+        },
+        {
+          "item": "tin_ring",
+          "chance": 0.15
+        },
+        {
+          "item": "nurses_band",
+          "chance": 0.06
+        },
+        {
+          "item": "union_banner",
+          "chance": 0.04
+        },
+        {
+          "item": "red_potion",
+          "chance": 0.15
+        }
+      ],
+      "palette": {
+        "a": "#5a7a3a",
+        "b": "#3a5222",
+        "e": "#ffe066",
+        "m": "#c04a4a"
+      },
       "sprite": [
         "............",
         "............",
@@ -328,8 +678,14 @@
     {
       "id": "pinkerton",
       "name": "Pinkerton Specter",
-      "hp": 44, "atk": 10, "def": 3, "speed": 60, "xp": 30,
-      "gold_min": 10, "gold_max": 24, "tier": 3,
+      "hp": 44,
+      "atk": 10,
+      "def": 3,
+      "speed": 60,
+      "xp": 30,
+      "gold_min": 10,
+      "gold_max": 24,
+      "tier": 3,
       "lines": [
         "I've been busting unions since 1850. Death didn't stop me.",
         "Your strike fund is MY bounty.",
@@ -338,8 +694,35 @@
         "Solidarity is a crime and I'm the eternal cop of it.",
         "We never sleep. Literally, anymore."
       ],
-      "drops": [ { "item": "riot_shield", "chance": 0.08 }, { "item": "steel_greaves", "chance": 0.1 } ],
-      "palette": { "a": "#4a4452", "b": "#2e2a36", "e": "#ff4444", "h": "#6a6274", "w": "#d8d0e0" },
+      "drops": [
+        {
+          "item": "riot_shield",
+          "chance": 0.08
+        },
+        {
+          "item": "steel_greaves",
+          "chance": 0.1
+        },
+        {
+          "item": "welding_mask",
+          "chance": 0.08
+        },
+        {
+          "item": "picket_pike",
+          "chance": 0.07
+        },
+        {
+          "item": "first_aid",
+          "chance": 0.1
+        }
+      ],
+      "palette": {
+        "a": "#4a4452",
+        "b": "#2e2a36",
+        "e": "#ff4444",
+        "h": "#6a6274",
+        "w": "#d8d0e0"
+      },
       "sprite": [
         "..hhhhhhhh..",
         ".hhhhhhhhhh.",
@@ -358,8 +741,14 @@
     {
       "id": "parachutist",
       "name": "Golden Parachutist",
-      "hp": 36, "atk": 8, "def": 2, "speed": 68, "xp": 28,
-      "gold_min": 20, "gold_max": 45, "tier": 3,
+      "hp": 36,
+      "atk": 8,
+      "def": 2,
+      "speed": 68,
+      "xp": 28,
+      "gold_min": 20,
+      "gold_max": 45,
+      "tier": 3,
       "lines": [
         "I crashed the company AND got paid for it!",
         "Failing upward is a skill, peasant!",
@@ -367,8 +756,39 @@
         "I'm already interviewing for my next catastrophe!",
         "Accountability is for the ground floor!"
       ],
-      "drops": [ { "item": "comrade_band", "chance": 0.1 }, { "item": "big_potion", "chance": 0.2 } ],
-      "palette": { "a": "#d9a97a", "b": "#8a6a4a", "g": "#ffd24a", "e": "#222222", "s": "#3a4a6a" },
+      "drops": [
+        {
+          "item": "comrade_band",
+          "chance": 0.1
+        },
+        {
+          "item": "big_potion",
+          "chance": 0.2
+        },
+        {
+          "item": "swift_sneakers",
+          "chance": 0.07
+        },
+        {
+          "item": "liberty_cap",
+          "chance": 0.05
+        },
+        {
+          "item": "golden_apple",
+          "chance": 0.05
+        },
+        {
+          "item": "union_tea",
+          "chance": 0.1
+        }
+      ],
+      "palette": {
+        "a": "#d9a97a",
+        "b": "#8a6a4a",
+        "g": "#ffd24a",
+        "e": "#222222",
+        "s": "#3a4a6a"
+      },
       "sprite": [
         "..gggggggg..",
         ".gggggggggg.",
@@ -387,8 +807,14 @@
     {
       "id": "grifter",
       "name": "Gaslight Gremlin",
-      "hp": 12, "atk": 3, "def": 0, "speed": 66, "xp": 6,
-      "gold_min": 4, "gold_max": 10, "tier": 1,
+      "hp": 12,
+      "atk": 3,
+      "def": 0,
+      "speed": 66,
+      "xp": 6,
+      "gold_min": 4,
+      "gold_max": 10,
+      "tier": 1,
       "lines": [
         "This is barely even a scam! It's an opportunity with extra steps!",
         "I'm not conning you, I'm INVESTING you!",
@@ -398,8 +824,34 @@
         "Look, on paper, I'm the victim here. I printed the paper myself.",
         "It's not a pyramid. It's a wealth triangle. Totally different shape."
       ],
-      "drops": [ { "item": "tin_ring", "chance": 0.15 }, { "item": "zine", "chance": 0.1 } ],
-      "palette": { "a": "#7fb84a", "b": "#4e7a28", "e": "#ffde59", "s": "#6a5a8a" },
+      "drops": [
+        {
+          "item": "tin_ring",
+          "chance": 0.15
+        },
+        {
+          "item": "zine",
+          "chance": 0.1
+        },
+        {
+          "item": "copper_ring",
+          "chance": 0.08
+        },
+        {
+          "item": "bread",
+          "chance": 0.2
+        },
+        {
+          "item": "worn_boots",
+          "chance": 0.06
+        }
+      ],
+      "palette": {
+        "a": "#7fb84a",
+        "b": "#4e7a28",
+        "e": "#ffde59",
+        "s": "#6a5a8a"
+      },
       "sprite": [
         "..b......b..",
         "..ab....ba..",
@@ -418,8 +870,14 @@
     {
       "id": "mummy",
       "name": "Middle Manager Mummy",
-      "hp": 28, "atk": 6, "def": 2, "speed": 40, "xp": 15,
-      "gold_min": 6, "gold_max": 14, "tier": 2,
+      "hp": 28,
+      "atk": 6,
+      "def": 2,
+      "speed": 40,
+      "xp": 15,
+      "gold_min": 6,
+      "gold_max": 14,
+      "tier": 2,
       "lines": [
         "I'm not just your boss. I'm your friend. Now perish for the quarterly.",
         "This is a family! A pyramid-shaped family that eats its young!",
@@ -430,8 +888,34 @@
         "There's no 'I' in team. There's a ME in mummy though. Several.",
         "This attack could have been an email. I chose violence for morale."
       ],
-      "drops": [ { "item": "strike_coffee", "chance": 0.2 }, { "item": "book_of_grievances", "chance": 0.08 } ],
-      "palette": { "a": "#d8cfb8", "b": "#a89f88", "e": "#8a2a2a", "t": "#3a3a52" },
+      "drops": [
+        {
+          "item": "strike_coffee",
+          "chance": 0.2
+        },
+        {
+          "item": "book_of_grievances",
+          "chance": 0.08
+        },
+        {
+          "item": "wool_cap",
+          "chance": 0.08
+        },
+        {
+          "item": "denim_patches",
+          "chance": 0.05
+        },
+        {
+          "item": "harvest_scythe",
+          "chance": 0.04
+        }
+      ],
+      "palette": {
+        "a": "#d8cfb8",
+        "b": "#a89f88",
+        "e": "#8a2a2a",
+        "t": "#3a3a52"
+      },
       "sprite": [
         "...aaaaaa...",
         "..abababa...",
@@ -450,8 +934,14 @@
     {
       "id": "knight",
       "name": "The Unyielding Knight",
-      "hp": 60, "atk": 11, "def": 5, "speed": 30, "xp": 40,
-      "gold_min": 12, "gold_max": 30, "tier": 3,
+      "hp": 60,
+      "atk": 11,
+      "def": 5,
+      "speed": 30,
+      "xp": 40,
+      "gold_min": 12,
+      "gold_max": 30,
+      "tier": 3,
       "lines": [
         "A scratch! Barely a dent in the ol' chainmail!",
         "I've been decapitated before. Walked it off.",
@@ -462,8 +952,39 @@
         "None shall pass without a receipt!",
         "I once argued with a shrubbery and WON."
       ],
-      "drops": [ { "item": "commune_tower", "chance": 0.08 }, { "item": "steel_toes", "chance": 0.1 } ],
-      "palette": { "a": "#3a3a44", "b": "#22222a", "e": "#ff4444", "p": "#cc2233", "s": "#6a6a78" },
+      "drops": [
+        {
+          "item": "commune_tower",
+          "chance": 0.08
+        },
+        {
+          "item": "steel_toes",
+          "chance": 0.1
+        },
+        {
+          "item": "plate_leggings",
+          "chance": 0.08
+        },
+        {
+          "item": "miners_helm",
+          "chance": 0.06
+        },
+        {
+          "item": "torch_of_truth",
+          "chance": 0.05
+        },
+        {
+          "item": "community_stew",
+          "chance": 0.12
+        }
+      ],
+      "palette": {
+        "a": "#3a3a44",
+        "b": "#22222a",
+        "e": "#ff4444",
+        "p": "#cc2233",
+        "s": "#6a6a78"
+      },
       "sprite": [
         "....pp......",
         "...aaaa.....",

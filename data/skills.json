@@ -1,0 +1,21 @@
+{
+  "skills": [
+    { "id": "union_grip", "name": "Union Grip", "desc": "+2 ATK. Many hands make hard fists.", "branch": 0, "tier": 1, "requires": "", "stat": "atk", "amount": 2 },
+    { "id": "heavy_swing", "name": "Heavy Swing", "desc": "+3 ATK. Put your whole local into it.", "branch": 0, "tier": 2, "requires": "union_grip", "stat": "atk", "amount": 3 },
+    { "id": "sharp_eye", "name": "Sharp Eye", "desc": "+10% crit chance. Aim for the portfolio.", "branch": 0, "tier": 3, "requires": "heavy_swing", "stat": "crit", "amount": 10 },
+    { "id": "class_action", "name": "Class Action", "desc": "+15% crit chance. Collective damages.", "branch": 0, "tier": 4, "requires": "sharp_eye", "stat": "crit", "amount": 15 },
+    { "id": "general_secretary", "name": "General Secretary", "desc": "+5 ATK. The negotiation ends here.", "branch": 0, "tier": 5, "requires": "class_action", "stat": "atk", "amount": 5 },
+
+    { "id": "thick_skin", "name": "Thick Skin", "desc": "+2 DEF. Heard every insult, kept walking.", "branch": 1, "tier": 1, "requires": "", "stat": "def", "amount": 2 },
+    { "id": "hearty_stew", "name": "Hearty Stew", "desc": "+15 max HP. Fern's recipe, Doc's blessing.", "branch": 1, "tier": 2, "requires": "thick_skin", "stat": "hp", "amount": 15 },
+    { "id": "quick_feet", "name": "Quick Feet", "desc": "+10 SPD. Learned on delivery runs.", "branch": 1, "tier": 3, "requires": "hearty_stew", "stat": "spd", "amount": 10 },
+    { "id": "light_step", "name": "Light Step", "desc": "Dodge cooldown -25%. Slip the grasp of capital.", "branch": 1, "tier": 4, "requires": "quick_feet", "stat": "dodge", "amount": 25 },
+    { "id": "peoples_bulwark", "name": "People's Bulwark", "desc": "+4 DEF. You are load-bearing now.", "branch": 1, "tier": 5, "requires": "light_step", "stat": "def", "amount": 4 },
+
+    { "id": "night_school", "name": "Night School", "desc": "+10 max MP. Free, obviously.", "branch": 2, "tier": 1, "requires": "", "stat": "mp", "amount": 10 },
+    { "id": "focused_rage", "name": "Focused Rage", "desc": "Spells cost 15% less. Anger, organized.", "branch": 2, "tier": 2, "requires": "night_school", "stat": "focus", "amount": 15 },
+    { "id": "deep_breath", "name": "Deep Breath", "desc": "MP regenerates 30% faster. In through the nose, out with the rent system.", "branch": 2, "tier": 3, "requires": "focused_rage", "stat": "mana_regen", "amount": 30 },
+    { "id": "agitator", "name": "Agitator", "desc": "+15% XP. Every fight is a teach-in.", "branch": 2, "tier": 4, "requires": "deep_breath", "stat": "xp", "amount": 15 },
+    { "id": "expropriator", "name": "Expropriator", "desc": "+25% gold from exploiters. It was ours anyway.", "branch": 2, "tier": 5, "requires": "agitator", "stat": "gold", "amount": 25 }
+  ]
+}

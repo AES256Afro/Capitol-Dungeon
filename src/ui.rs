@@ -1,7 +1,7 @@
 use crate::content::Content;
 use crate::dungeon::{Tile, TILE};
 use crate::sprites::{self, hex};
-use crate::world::{World, EQUIP_SLOTS};
+use crate::world::{LogKind, World, EQUIP_SLOTS};
 use macroquad::prelude::*;
 use std::collections::HashMap;
 
@@ -595,6 +595,39 @@ pub fn draw_hud(world: &World, content: &Content) {
         }
     }
 
+    // live chat feed: the last few lines of dungeon conversation
+    {
+        let n = world.log.len();
+        let show = 3.min(n);
+        let base_y = screen_height() - 64.0;
+        for i in 0..show {
+            let e = &world.log[n - 1 - i];
+            let col = log_color(e.kind);
+            let line = if e.who.is_empty() {
+                e.text.clone()
+            } else {
+                format!("{}: {}", e.who, e.text)
+            };
+            let line: String = if line.chars().count() > 56 {
+                line.chars().take(54).collect::<String>() + "…"
+            } else {
+                line
+            };
+            let y = base_y - i as f32 * 17.0;
+            let alpha = 0.75 - i as f32 * 0.2;
+            draw_rectangle(258.0, y - 13.0, 420.0, 16.0, Color::new(0.0, 0.0, 0.0, 0.35 * alpha));
+            draw_text(&line, 262.0, y, 14.0, Color::new(col.r, col.g, col.b, alpha));
+        }
+        draw_text("[T] full log", 262.0, base_y - 3.0 * 17.0 - 4.0, 12.0, Color::new(0.6, 0.55, 0.7, 0.6));
+    }
+
+    // skill point nudge
+    if world.player.skill_points > 0 {
+        let pulse = ((get_time() * 4.0).sin() * 0.25 + 0.75) as f32;
+        let msg = format!("[P] {} skill point{} to spend!", world.player.skill_points, if world.player.skill_points > 1 { "s" } else { "" });
+        draw_text(&msg, 16.0, 106.0, 16.0, Color::new(1.0, 0.85, 0.3, pulse));
+    }
+
     // interaction hint
     if let Some(h) = interaction_hint(world, content) {
         let td = measure_text(&h, None, 19, 1.0);
@@ -837,8 +870,8 @@ pub fn draw_menu(has_custom: bool) {
     }
 
     let controls = [
-        "WASD/arrows move · Space attack · 1-4 spells · E interact",
-        "I inventory · V achievements · Esc menu · touch: stick + buttons",
+        "WASD/arrows move · Space attack · Shift dodge · 1-4 spells · E interact",
+        "I inventory · P skill tree · T chat log · V achievements · touch: stick + buttons",
         "",
         "The fire is free. The clinic is free. The lessons are free.",
         "Everything else, the goblins financialized. Go fix that.",
@@ -847,6 +880,154 @@ pub fn draw_menu(has_custom: bool) {
         let ld = measure_text(l, None, 17, 1.0);
         draw_text(l, cx - ld.width / 2.0, 380.0 + i as f32 * 24.0, 17.0, hex("#8a7f9d"));
     }
+}
+
+fn log_color(kind: LogKind) -> Color {
+    match kind {
+        LogKind::Enemy => hex("#ff9a8a"),
+        LogKind::Comrade => hex("#9adcb4"),
+        LogKind::System => hex("#ffd24a"),
+    }
+}
+
+/// Full scrollable transcript of everything said in the dungeon.
+/// `scroll` counts entries back from the newest.
+pub fn draw_log(world: &World, scroll: usize) {
+    let w = 700.0_f32.min(screen_width() - 40.0);
+    let h = (screen_height() - 60.0).min(520.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    panel(x, y, w, h, "Dungeon Chat Log   [↑/↓] scroll  [T / Esc] close");
+
+    let line_h = 19.0;
+    let rows = ((h - 60.0) / line_h) as usize;
+    let n = world.log.len();
+    let newest = n.saturating_sub(scroll);
+    let oldest = newest.saturating_sub(rows);
+    let mut ry = y + h - 16.0;
+    for i in (oldest..newest).rev() {
+        let e = &world.log[i];
+        let col = log_color(e.kind);
+        let line = if e.who.is_empty() {
+            e.text.clone()
+        } else {
+            format!("{}: {}", e.who, e.text)
+        };
+        let line: String = if line.chars().count() > 78 {
+            line.chars().take(76).collect::<String>() + "…"
+        } else {
+            line
+        };
+        draw_text(&line, x + 14.0, ry, 16.0, col);
+        ry -= line_h;
+    }
+    if n == 0 {
+        draw_text("Silence so far. Go poke a goblin.", x + 14.0, y + 60.0, 16.0, GRAY);
+    }
+    let counter = format!("{} lines", n);
+    let cd = measure_text(&counter, None, 13, 1.0);
+    draw_text(&counter, x + w - cd.width - 10.0, y + h - 8.0, 13.0, DARKGRAY);
+}
+
+/// The Solidarity Tree. Returns per-node rects for tap support.
+pub fn draw_skills(world: &World, content: &Content, sel_branch: usize, sel_tier: usize) {
+    let w = 760.0_f32.min(screen_width() - 30.0);
+    let h = (screen_height() - 50.0).min(500.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    panel(
+        x,
+        y,
+        w,
+        h,
+        &format!(
+            "The Solidarity Tree   {} point{} — [arrows] pick  [Enter] learn  [Esc] close",
+            world.player.skill_points,
+            if world.player.skill_points == 1 { "" } else { "s" }
+        ),
+    );
+
+    let branches = ["PICKET LINE", "MUTUAL AID", "CLASS CONSCIOUSNESS"];
+    let col_w = w / 3.0;
+    for (bi, bname) in branches.iter().enumerate() {
+        let bx = x + bi as f32 * col_w;
+        let td = measure_text(bname, None, 15, 1.0);
+        draw_text(bname, bx + (col_w - td.width) / 2.0, y + 52.0, 15.0, hex("#8a7f9d"));
+        let skills: Vec<&crate::content::SkillDef> = content
+            .skills
+            .iter()
+            .filter(|s| s.branch == bi)
+            .collect();
+        for s in skills {
+            let (nx, ny, nw, nh) = skill_node_rect(x, y, w, s.branch, s.tier);
+            let learned = world.player.skills.iter().any(|id| id == &s.id);
+            let unlocked = s.requires.is_empty()
+                || world.player.skills.iter().any(|id| id == &s.requires);
+            let selected = sel_branch == s.branch && sel_tier == s.tier as usize;
+            // connective tissue to the node above
+            if s.tier > 1 {
+                let (px2, py2, pw2, ph2) = skill_node_rect(x, y, w, s.branch, s.tier - 1);
+                let c = if learned { hex("#ffd24a") } else { hex("#4a4458") };
+                draw_line(nx + nw / 2.0, ny, px2 + pw2 / 2.0, py2 + ph2, 2.0, c);
+            }
+            let bg = if learned {
+                Color::new(0.28, 0.22, 0.08, 1.0)
+            } else if unlocked {
+                Color::new(0.12, 0.1, 0.16, 1.0)
+            } else {
+                Color::new(0.07, 0.06, 0.1, 1.0)
+            };
+            let border = if selected {
+                hex("#ffffff")
+            } else if learned {
+                hex("#ffd24a")
+            } else if unlocked {
+                hex("#8a7f9d")
+            } else {
+                hex("#3a3444")
+            };
+            draw_rectangle(nx, ny, nw, nh, bg);
+            draw_rectangle_lines(nx, ny, nw, nh, 2.0, border);
+            let name_col = if learned {
+                hex("#ffd24a")
+            } else if unlocked {
+                WHITE
+            } else {
+                GRAY
+            };
+            draw_text(&s.name, nx + 8.0, ny + 18.0, 15.0, name_col);
+            for (li, l) in wrap_text(&s.desc, 30).iter().take(2).enumerate() {
+                draw_text(l, nx + 8.0, ny + 34.0 + li as f32 * 14.0, 12.0, if unlocked { hex("#b8b0c4") } else { DARKGRAY });
+            }
+        }
+    }
+}
+
+pub fn skill_node_rect(px: f32, py: f32, pw: f32, branch: usize, tier: i32) -> (f32, f32, f32, f32) {
+    let col_w = pw / 3.0;
+    let nw = col_w - 28.0;
+    let nh = 64.0;
+    let nx = px + branch as f32 * col_w + 14.0;
+    let ny = py + 62.0 + (tier - 1) as f32 * 76.0;
+    (nx, ny, nw, nh)
+}
+
+pub fn skill_hit(world_x: f32, world_y: f32, content: &Content, pos: Vec2) -> Option<(usize, usize)> {
+    let _ = (world_x, world_y);
+    let w = 760.0_f32.min(screen_width() - 30.0);
+    let h = (screen_height() - 50.0).min(500.0);
+    let x = (screen_width() - w) / 2.0;
+    let y = (screen_height() - h) / 2.0;
+    if pos.x < x || pos.x > x + w || pos.y < y || pos.y > y + h {
+        return None;
+    }
+    for s in &content.skills {
+        let (nx, ny, nw, nh) = skill_node_rect(x, y, w, s.branch, s.tier);
+        if pos.x >= nx && pos.x <= nx + nw && pos.y >= ny && pos.y <= ny + nh {
+            return Some((s.branch, s.tier as usize));
+        }
+    }
+    None
 }
 
 // ---------- tap hit-testing (touch support for menus) ----------
